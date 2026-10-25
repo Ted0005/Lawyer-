@@ -60,7 +60,7 @@ final class Store: ObservableObject {
             data.lessons = lessons
             data.updated = Date()
         } catch {
-            self.error = "Нет связи с сайтом вуза. Показано сохранённое расписание."
+            self.error = "Ошибка: " + error.localizedDescription
         }
     }
 
