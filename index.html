@@ -64,13 +64,21 @@ summary{cursor:pointer;font-weight:600}
 .body{white-space:pre-wrap;margin:8px 0;color:var(--ink)}
 .note{font-size:13px;color:var(--mut)}
 .ghost{border:1px solid var(--ln);background:var(--sf);color:var(--ink);font:inherit;padding:8px 12px;border-radius:8px;cursor:pointer}
+.hw{margin-top:6px;display:grid;gap:4px}
+.hw label{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);background:var(--soft);border-radius:8px;padding:6px 8px}
+.hw input{width:20px;height:20px;flex:none}
+.hw .done{text-decoration:line-through;color:var(--mut)}
+.dot{display:block;height:8px;line-height:8px;font-size:8px;color:var(--warn)}
+.nxt{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:14px}
+.nxt b{display:block;margin-bottom:4px}
+.nxt div+div{margin-top:4px}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
 <h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 2.4</p>
+<p class="sub">КубГАУ, юридический факультет · версия 2.6</p>
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
@@ -79,9 +87,10 @@ summary{cursor:pointer;font-weight:600}
 
 <section id="s">
   <div id="nowbox" class="nowbox" hidden></div>
+  <div id="nxt" class="nxt" hidden></div>
   <div id="strip" class="strip"></div>
   <div id="msg" class="msg" hidden></div>
-  <div class="day"><h2 id="dayh"></h2><div id="slots"></div></div>
+  <div class="day"><h2 id="dayh"></h2><div id="slots"></div><div id="dayt"></div></div>
   <div class="row"><button class="pill" id="today">К сегодняшнему дню</button><button class="pill" id="refresh">Обновить</button></div>
   <details id="gbox">
     <summary>Основная группа: <span id="gname"></span></summary>
@@ -97,6 +106,7 @@ summary{cursor:pointer;font-weight:600}
   <form id="tf">
     <label>Тип<select id="ttype"><option>ДЗ</option><option>Зачёт</option><option>Экзамен</option><option>Дедлайн</option></select></label>
     <label>Предмет<select id="tsubj"></select></label>
+    <label id="tlw" hidden>Сдать на семинаре<select id="tles"></select></label>
     <label>Что нужно сделать<input id="ttitle" required maxlength="140" placeholder="Например: конспект гл. 3"></label>
     <label>Срок<input id="tdue" type="datetime-local" required></label>
     <button class="add" type="submit">Добавить</button>
@@ -253,11 +263,12 @@ var sel=startDay();
 
 function renderStrip(){
   var box=$("strip"),m=mon(sel),td=+day0(new Date());box.textContent="";
+  var has={};S.tasks.forEach(function(t){if(!t.done)has[t.lesson?t.lesson.k:dkey(new Date(t.due))]=1});
   var p=mk("button","ar","‹");p.setAttribute("aria-label","Предыдущая неделя");p.onclick=function(){sel=addD(sel,-7);renderDays()};box.appendChild(p);
   for(var i=0;i<6;i++){(function(dt,i){
     var b=mk("button",+dt===td?"td":"");b.setAttribute("aria-pressed",String(+dt===+sel));
     b.setAttribute("aria-label",DN[i]+", "+dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long"}));
-    b.appendChild(mk("span","dw",DS[i]));b.appendChild(mk("span","dn",String(dt.getDate())));
+    b.appendChild(mk("span","dw",DS[i]));b.appendChild(mk("span","dn",String(dt.getDate())));if(has[dkey(dt)])b.appendChild(mk("span","dot","●"));
     b.onclick=function(){sel=dt;renderDays()};box.appendChild(b);
   })(addD(m,i),i)}
   var n=mk("button","ar","›");n.setAttribute("aria-label","Следующая неделя");n.onclick=function(){sel=addD(sel,7);renderDays()};box.appendChild(n);
@@ -267,12 +278,12 @@ function renderDays(){
   var data=cur(),w=weekOf(sel),d=(sel.getDay()+6)%7;SLOTS=(d===5?SLOTS_SAT:SLOTS_MAIN);
   var isT=+sel===+day0(new Date()),nowM=new Date().getHours()*60+new Date().getMinutes();
   $("h1").textContent="Учёба: "+S.group;$("gname").textContent=S.group;
-  renderStrip();
+  renderStrip();renderSoon();
   $("dayh").textContent=DN[d]+", "+sel.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})+" · "+(w===1?"I":"II")+" неделя"+(isT?" · сегодня":"");
   var ls=data.lessons.filter(function(l){return l.w===w&&l.d===d});
   var by=SLOTS.map(function(_,i){return ls.filter(function(l){return slotOf(l.t)===i})}),extra=ls.filter(function(l){return slotOf(l.t)<0});
   var first=-1,last=-1;by.forEach(function(a,i){if(a.length){if(first<0)first=i;last=i}});
-  var box=$("slots");box.textContent="";
+  var box=$("slots");box.textContent="";var shownT={};
   function row(label,time,items,i){
     var r=mk("div","les"),lt=mk("div","t");lt.appendChild(mk("div","pn",label));lt.appendChild(mk("div","",time));r.appendChild(lt);
     var c=mk("div");
@@ -285,11 +296,20 @@ function renderDays(){
         if(l.k||l.r){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));if(l.r)m.appendChild(document.createTextNode(l.r));it.appendChild(m)}
         c.appendChild(it);
       });
+      var st=i>=0?SLOTS[i][0]:startOf(items[0].t),hs=S.tasks.filter(function(t){return t.lesson&&t.lesson.k===dkey(sel)&&t.lesson.t===st&&items.some(function(l){return sameSubj(l.s,t.lesson.s)})});
+      if(hs.length){var hw=mk("div","hw");hs.forEach(function(t){shownT[t.id]=1;var lb=mk("label"),cb=mk("input");cb.type="checkbox";cb.checked=!!t.done;cb.onchange=function(){t.done=cb.checked;save();renderDays();renderTasks()};lb.appendChild(cb);lb.appendChild(mk("span",t.done?"done":"",t.type+": "+t.title));hw.appendChild(lb)});c.appendChild(hw)}
     }else c.appendChild(mk("div","n off",(i>first&&i<last)?"Окно":"Нет пары"));
     r.appendChild(c);box.appendChild(r);
   }
   by.forEach(function(a,i){row((i+1)+" пара",SLOTS[i][0]+"–"+SLOTS[i][1],a,i)});
   extra.forEach(function(l){row("Вне сетки",l.t,[l],-1)});
+
+  var dt=$("dayt");dt.textContent="";
+  S.tasks.filter(function(t){return !t.done&&!shownT[t.id]&&(t.lesson?t.lesson.k===dkey(sel):dkey(new Date(t.due))===dkey(sel))}).forEach(function(t){
+    var x=mk("div","les"),c=mk("div"),n=mk("div","n");
+    x.appendChild(mk("div","t",new Date(t.due).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})));
+    n.appendChild(mk("span","chip"+(t.type==="Экзамен"||t.type==="Зачёт"?" ex":""),t.type));n.appendChild(document.createTextNode(t.title));
+    c.appendChild(n);c.appendChild(mk("div","m",t.subj));x.appendChild(c);dt.appendChild(x)});
 
   /* плашка «сейчас» */
   var nb=$("nowbox"),txt="",calm=true;
@@ -306,25 +326,61 @@ function renderDays(){
 /* задачи */
 function rel(ms){var a=Math.abs(ms),m=Math.round(a/6e4),h=Math.round(a/36e5),d=Math.round(a/864e5),s=m<60?m+" мин":h<48?h+" ч":d+" дн";return ms<0?"просрочено на "+s:"через "+s}
 function fmt(t){return new Date(t).toLocaleString("ru-RU",{weekday:"short",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})}
+function dkey(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function sameSubj(ls,subj){return ls===subj||(subj==="Физкультура"&&ls.indexOf("Элективные")===0)}
+function startOf(t){var a=(t||"").match(/\d{1,2}:\d{2}/);return a?("0"+a[0]).slice(-5):""}
+function renderSoon(){
+  var b=$("nxt"),now=Date.now(),ls=S.tasks.filter(function(t){return !t.done&&t.due<now+7*864e5}).sort(function(a,c){return a.due-c.due}).slice(0,4);
+  b.textContent="";b.hidden=!ls.length;if(!ls.length)return;
+  b.appendChild(mk("b","","Ближайшие сроки"));
+  ls.forEach(function(t){var l=t.due-now;b.appendChild(mk("div",l<864e5?"due soon":"due",t.type+" · "+t.subj+": "+t.title+" — "+fmt(t.due)+" · "+rel(l)))});
+}
+/* ближайшие семинары предмета на 3 недели вперёд (на лекциях ДЗ не задают), чтобы привязать ДЗ */
+var PO=[],autoDue=false;
+function pairOptions(subj){
+  var out=[],seen={},data=cur(),base=day0(new Date());
+  for(var i=0;i<21;i++){
+    var d=addD(base,i);if(d.getDay()===0)continue;
+    var w=weekOf(d),di=(d.getDay()+6)%7;
+    data.lessons.filter(function(l){return l.w===w&&l.d===di&&l.k!=="lec"&&sameSubj(l.s,subj)}).forEach(function(l){
+      var st=startOf(l.t),k=dkey(d);if(!st||seen[k+st])return;seen[k+st]=1;
+      if(new Date(d.getFullYear(),d.getMonth(),d.getDate(),+st.slice(0,2),+st.slice(3))<Date.now())return;
+      out.push({k:k,t:st,label:DS[di]+" "+d.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})+", "+st+(l.r?" · "+l.r.split(" · ").pop():"")});
+    });
+  }
+  return out;
+}
+function applyLes(force){var v=$("tles").value;if(v==="")return;if(force||!$("tdue").value||autoDue){var p=PO[+v];$("tdue").value=p.k+"T"+p.t;autoDue=true}}
+function syncLes(){
+  var show=$("ttype").value==="ДЗ"&&$("tsubj").value!=="Другое";
+  PO=show?pairOptions($("tsubj").value):[];
+  var s=$("tles");s.textContent="";
+  var o=mk("option","","Без привязки");o.value="";s.appendChild(o);
+  PO.forEach(function(p,i){var q=mk("option","",p.label);q.value=String(i);s.appendChild(q)});
+  $("tlw").hidden=!PO.length;
+  if(PO.length){s.value="0";applyLes(false)}
+}
 function renderTasks(){
-  var box=$("tlist");box.textContent="";
+  var box=$("tlist");box.textContent="";renderSoon();
   S.tasks.sort(function(a,b){return (a.done?1:0)-(b.done?1:0)||a.due-b.due});
   if(!S.tasks.length){box.appendChild(mk("p","note","Пока пусто. Добавьте первое задание выше."));return}
   S.tasks.forEach(function(it){
     var left=it.due-Date.now(),r=mk("div","card"+(it.done?" done":""));
     var cb=mk("input");cb.type="checkbox";cb.checked=!!it.done;cb.setAttribute("aria-label","Выполнено");
-    cb.onchange=function(){it.done=cb.checked;save();renderTasks()};
+    cb.onchange=function(){it.done=cb.checked;save();renderTasks();renderDays()};
     var c=mk("div"),tt=mk("div","tt");tt.appendChild(mk("span","chip"+(it.type==="Экзамен"||it.type==="Зачёт"?" ex":""),it.type));tt.appendChild(document.createTextNode(it.title));
     c.appendChild(tt);c.appendChild(mk("div","due",it.subj));
+    if(it.lesson){var lp=it.lesson.k.split("-"),ld=new Date(+lp[0],+lp[1]-1,+lp[2]);c.appendChild(mk("div","due","К паре: "+(DS[(ld.getDay()+6)%7]||"")+" "+ld.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})+", "+it.lesson.t))}
     c.appendChild(mk("div","due"+((!it.done&&left<864e5)?" soon":""),fmt(it.due)+(it.done?"":" · "+rel(left))));
     var x=mk("button","del","×");x.setAttribute("aria-label","Удалить");
-    x.onclick=function(){S.tasks=S.tasks.filter(function(z){return z.id!==it.id});save();renderTasks()};
+    x.onclick=function(){S.tasks=S.tasks.filter(function(z){return z.id!==it.id});save();renderTasks();renderDays()};
     r.appendChild(cb);r.appendChild(c);r.appendChild(x);box.appendChild(r);
   });
 }
 $("tf").onsubmit=function(e){e.preventDefault();var t=new Date($("tdue").value).getTime();if(!$("ttitle").value.trim()||isNaN(t))return;
-  S.tasks.push({id:Date.now()+"",type:$("ttype").value,subj:$("tsubj").value,title:$("ttitle").value.trim(),due:t,done:false});
-  save();$("ttitle").value="";renderTasks()};
+  var v=$("tles").value,les=(!$("tlw").hidden&&v!=="")?{k:PO[+v].k,t:PO[+v].t,s:$("tsubj").value}:null;
+  S.tasks.push({id:Date.now()+"",type:$("ttype").value,subj:$("tsubj").value,title:$("ttitle").value.trim(),due:t,done:false,lesson:les});
+  save();$("ttitle").value="";$("tdue").value="";autoDue=false;syncLes();renderTasks();renderDays()};
 function notifyDue(){if(!("Notification" in window)||Notification.permission!=="granted")return;var ch=0;
   S.tasks.forEach(function(t){var l=t.due-Date.now();if(!t.done&&!t.sent&&l<36e5&&l>-36e5){try{new Notification(t.type+": "+t.subj,{body:t.title})}catch(e){}t.sent=1;ch=1}});if(ch)save()}
 
@@ -353,9 +409,10 @@ function opts(sel,list){list.forEach(function(s){var o=mk("option","",s);o.value
 opts($("tsubj"),SUBJ);opts($("nsubj"),SUBJ);opts($("nfilter"),["Все предметы"].concat(SUBJ));
 document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){
   document.querySelectorAll("[data-tab]").forEach(function(x){x.setAttribute("aria-selected",String(x===b))});
-  ["s","t","n"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)})}});
+  ["s","t","n"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays()}});
 $("today").onclick=function(){sel=startDay();renderDays()};
 $("refresh").onclick=refresh;
+$("ttype").onchange=syncLes;$("tsubj").onchange=syncLes;$("tles").onchange=function(){applyLes(true)};$("tdue").oninput=function(){autoDue=false};
 $("gf").onsubmit=function(e){e.preventDefault();var v=$("gin").value.replace(/\s+/g,"").toUpperCase();if(!v)return;
   S.group=v;save();$("gin").value="";$("gbox").open=false;renderDays();if(navigator.onLine)refresh()};
 if("Notification" in window&&Notification.permission==="default"){$("notif").hidden=false;$("notif").onclick=function(){Notification.requestPermission().then(function(){$("notif").hidden=true})}}
