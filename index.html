@@ -72,13 +72,21 @@ summary{cursor:pointer;font-weight:600}
 .nxt{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:14px}
 .nxt b{display:block;margin-bottom:4px}
 .nxt div+div{margin-top:4px}
+.ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:8px 0}
+.ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--ln);background:var(--soft);cursor:pointer}
+.addph{display:inline-block;border:1px solid var(--ln);background:var(--sf);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px;margin-right:8px}
+#viewer{position:fixed;inset:0;background:#000;z-index:10;display:flex;flex-direction:column}
+#viewer img{flex:1;min-height:0;width:100%;object-fit:contain}
+.vbar{display:flex;gap:8px;justify-content:space-between;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.vbar button{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;background:#fff;color:#000}
+.vbar .vd{background:var(--warn);color:var(--on)}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
 <h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 2.6</p>
+<p class="sub">КубГАУ, юридический факультет · версия 2.7</p>
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
@@ -121,16 +129,18 @@ summary{cursor:pointer;font-weight:600}
     <label>Предмет<select id="nsubj"></select></label>
     <label>Номер темы<input id="ntopic" maxlength="20" placeholder="Например: 3"></label>
     <label>Заголовок<input id="ntitle" required maxlength="120"></label>
-    <label>Текст<textarea id="ntext" rows="5"></textarea></label>
+    <label>Текст (можно не заполнять, если есть фото)<textarea id="ntext" rows="5"></textarea></label>
+    <label>Фото конспекта<input id="nphoto" type="file" accept="image/*" multiple></label>
     <button class="add" type="submit">Сохранить конспект</button>
   </form>
   <div class="row"><select id="nfilter" aria-label="Предмет"></select></div>
   <input id="nsearch" type="search" placeholder="Поиск по конспектам" style="margin-bottom:12px">
   <div id="nlist"></div>
-  <div class="row" style="margin-top:16px"><button class="ghost" id="bk">Скопировать копию данных</button><button class="ghost" id="rs">Восстановить из буфера</button></div>
-  <p class="note">Данные хранятся только на этом устройстве. Делайте копию данных время от времени и сохраняйте её в «Заметки».</p>
+  <div class="row" style="margin-top:16px"><button class="ghost" id="bk">Сохранить копию в файл</button><button class="ghost" id="rs">Восстановить из файла</button><input type="file" id="rsf" accept=".json,application/json" hidden></div>
+  <p class="note">Всё хранится только на этом устройстве: конспекты, задачи и фото. Safari может очистить данные сайта, если им долго не пользоваться, поэтому время от времени сохраняйте копию в файл (в «Файлы» или iCloud). В копию входят и фото.</p>
 </section>
 </main>
+<div id="viewer" hidden><img id="vimg" alt="Фото конспекта"><div class="vbar"><button id="vdel" class="vd">Удалить фото</button><button id="vclose">Закрыть</button></div></div>
 
 <script>
 var DEF="ЮФ2611", KEY="uch_v2";
@@ -384,6 +394,27 @@ $("tf").onsubmit=function(e){e.preventDefault();var t=new Date($("tdue").value).
 function notifyDue(){if(!("Notification" in window)||Notification.permission!=="granted")return;var ch=0;
   S.tasks.forEach(function(t){var l=t.due-Date.now();if(!t.done&&!t.sent&&l<36e5&&l>-36e5){try{new Notification(t.type+": "+t.subj,{body:t.title})}catch(e){}t.sent=1;ch=1}});if(ch)save()}
 
+/* фото конспектов: храним в IndexedDB (в localStorage не влезут), в записи конспекта только их id */
+var DBH=null,openN={};
+function dbOpen(){return new Promise(function(res,rej){if(DBH)return res(DBH);if(!window.indexedDB)return rej(new Error("no idb"));var r=indexedDB.open("uch_photos",1);r.onupgradeneeded=function(){r.result.createObjectStore("p")};r.onsuccess=function(){DBH=r.result;res(DBH)};r.onerror=function(){rej(r.error)}})}
+function dbTx(mode,fn){return dbOpen().then(function(db){return new Promise(function(res,rej){var tx=db.transaction("p",mode),rq=fn(tx.objectStore("p"));tx.oncomplete=function(){res(rq&&rq.result)};tx.onerror=tx.onabort=function(){rej(tx.error)}})})}
+function dbPut(id,b){return dbTx("readwrite",function(s){return s.put(b,id)})}
+function dbGet(id){return dbTx("readonly",function(s){return s.get(id)})}
+function dbDel(id){return dbTx("readwrite",function(s){return s.delete(id)})}
+function shrink(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();
+  im.onload=function(){var sc=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?res(b):rej(new Error("blob"))},"image/jpeg",0.82)};
+  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error("img"))};im.src=u})}
+/* добавляет фото в конспект, возвращает число неудачных */
+function addPhotos(n,files){
+  var list=[].slice.call(files),bad=0;n.photos=n.photos||[];
+  return list.reduce(function(p,f){return p.then(function(){return shrink(f).then(function(b){var id="p"+Date.now()+Math.random().toString(36).slice(2,7);return dbPut(id,b).then(function(){n.photos.push(id)})}).catch(function(){bad++})})},Promise.resolve()).then(function(){return bad});
+}
+var VW=null;
+function openViewer(n,id,url){VW={n:n,id:id};$("vimg").src=url;$("viewer").hidden=false}
+function closeViewer(){$("viewer").hidden=true;$("vimg").removeAttribute("src");VW=null}
+$("vclose").onclick=closeViewer;
+$("vdel").onclick=function(){if(!VW||!confirm("Удалить это фото?"))return;var w=VW;w.n.photos=(w.n.photos||[]).filter(function(x){return x!==w.id});dbDel(w.id).catch(function(){});save();closeViewer();renderNotes()};
+
 /* конспекты */
 function renderNotes(){
   var box=$("nlist");box.textContent="";var f=$("nfilter").value,q=$("nsearch").value.trim().toLowerCase();
@@ -391,18 +422,46 @@ function renderNotes(){
   ls.sort(function(a,b){return a.subj.localeCompare(b.subj,"ru")||String(a.topic).localeCompare(String(b.topic),"ru",{numeric:true})});
   if(!ls.length){box.appendChild(mk("p","note",S.notes.length?"Ничего не найдено.":"Конспектов пока нет."));return}
   ls.forEach(function(n){
-    var d=document.createElement("details"),s=mk("summary","",n.subj+(n.topic?" · тема "+n.topic:"")+" · "+n.title);
-    d.appendChild(s);d.appendChild(mk("div","body",n.text||"(без текста)"));
-    var x=mk("button","ghost","Удалить");x.onclick=function(){if(confirm("Удалить конспект?")){S.notes=S.notes.filter(function(z){return z.id!==n.id});save();renderNotes()}};
+    var np=(n.photos||[]).length,d=document.createElement("details"),s=mk("summary","",n.subj+(n.topic?" · тема "+n.topic:"")+" · "+n.title+(np?" · фото: "+np:""));
+    d.appendChild(s);if(n.text)d.appendChild(mk("div","body",n.text));
+    var ph=mk("div","ph"),filled=false;d.appendChild(ph);
+    function fill(){if(filled)return;filled=true;(n.photos||[]).forEach(function(id){var im=mk("img");im.alt="Фото конспекта";ph.appendChild(im);dbGet(id).then(function(b){if(b){im.src=URL.createObjectURL(b);im.onclick=function(){openViewer(n,id,im.src)}}else{im.alt="Фото не найдено"}}).catch(function(){})})}
+    if(openN[n.id]){d.open=true;fill()}
+    d.addEventListener("toggle",function(){openN[n.id]=d.open;if(d.open)fill()});
+    var ad=mk("label","addph","Добавить фото"),fi=mk("input");fi.type="file";fi.accept="image/*";fi.multiple=true;fi.hidden=true;
+    fi.onchange=function(){if(!fi.files.length)return;addPhotos(n,fi.files).then(function(bad){save();renderNotes();if(bad)alert("Не удалось добавить фото: "+bad+" шт.")})};
+    ad.appendChild(fi);d.appendChild(ad);
+    var x=mk("button","ghost","Удалить");x.onclick=function(){if(confirm("Удалить конспект вместе с фото?")){(n.photos||[]).forEach(function(id){dbDel(id).catch(function(){})});S.notes=S.notes.filter(function(z){return z.id!==n.id});save();renderNotes()}};
     d.appendChild(x);box.appendChild(d);
   });
 }
 $("nf").onsubmit=function(e){e.preventDefault();if(!$("ntitle").value.trim())return;
-  S.notes.push({id:Date.now()+"",subj:$("nsubj").value,topic:$("ntopic").value.trim(),title:$("ntitle").value.trim(),text:$("ntext").value});
-  save();$("ntitle").value="";$("ntext").value="";renderNotes()};
+  var n={id:Date.now()+"",subj:$("nsubj").value,topic:$("ntopic").value.trim(),title:$("ntitle").value.trim(),text:$("ntext").value,photos:[]},btn=$("nf").querySelector(".add");
+  btn.disabled=true;btn.textContent="Сохраняю…";
+  addPhotos(n,$("nphoto").files).then(function(bad){S.notes.push(n);save();$("ntitle").value="";$("ntext").value="";$("nphoto").value="";btn.disabled=false;btn.textContent="Сохранить конспект";renderNotes();if(bad)alert("Не удалось добавить фото: "+bad+" шт. Конспект сохранён.")})};
 $("nfilter").onchange=renderNotes;$("nsearch").oninput=renderNotes;
-$("bk").onclick=function(){var j=JSON.stringify({tasks:S.tasks,notes:S.notes});(navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(function(){alert("Копия скопирована. Вставьте её в «Заметки».")}).catch(function(){prompt("Скопируйте текст:",j)})};
-$("rs").onclick=function(){var t=prompt("Вставьте сохранённую копию данных:");if(!t)return;try{var j=JSON.parse(t);S.tasks=j.tasks||[];S.notes=j.notes||[];save();renderTasks();renderNotes();alert("Данные восстановлены.")}catch(e){alert("Не получилось прочитать копию.")}};
+/* копия данных в файл: задачи, конспекты и фото (фото как data-URL) */
+function toDataURL(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result)};r.onerror=function(){rej(r.error)};r.readAsDataURL(b)})}
+function backupText(){
+  var photos={},ids=[];S.notes.forEach(function(n){(n.photos||[]).forEach(function(id){ids.push(id)})});
+  return ids.reduce(function(p,id){return p.then(function(){return dbGet(id).then(function(b){if(b)return toDataURL(b).then(function(u){photos[id]=u})}).catch(function(){})})},Promise.resolve())
+    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,photos:photos})});
+}
+function saveFile(name,text){
+  var f=null;try{f=new File([text],name,{type:"application/json"})}catch(e){}
+  var sh=(f&&navigator.canShare&&navigator.canShare({files:[f]}))?navigator.share({files:[f]}).then(function(){return true}).catch(function(e){return !!(e&&e.name==="AbortError")}):Promise.resolve(false);
+  return sh.then(function(done){if(done)return;var u=URL.createObjectURL(new Blob([text],{type:"application/json"})),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)});
+}
+$("bk").onclick=function(){var b=$("bk");b.disabled=true;b.textContent="Готовлю копию…";
+  backupText().then(function(t){return saveFile("uchyoba-"+dkey(new Date())+".json",t)}).catch(function(){alert("Не получилось сделать копию.")}).then(function(){b.disabled=false;b.textContent="Сохранить копию в файл"})};
+$("rs").onclick=function(){$("rsf").click()};
+$("rsf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
+  var r=new FileReader();r.onload=function(){var j;try{j=JSON.parse(r.result)}catch(e){alert("Не получилось прочитать файл.");return}
+    if(!j||(!j.tasks&&!j.notes)){alert("Это не копия данных приложения.");return}
+    if(!confirm("Заменить текущие задачи и конспекты данными из файла?"))return;
+    Object.keys(j.photos||{}).reduce(function(p,id){return p.then(function(){return fetch(j.photos[id]).then(function(x){return x.blob()}).then(function(b){return dbPut(id,b)}).catch(function(){})})},Promise.resolve()).then(function(){
+      S.tasks=j.tasks||[];S.notes=j.notes||[];save();renderTasks();renderDays();renderNotes();alert("Данные восстановлены.")})};
+  r.readAsText(f)};
 
 /* общее */
 function opts(sel,list){list.forEach(function(s){var o=mk("option","",s);o.value=s;sel.appendChild(o)})}
