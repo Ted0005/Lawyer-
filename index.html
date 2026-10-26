@@ -11,13 +11,20 @@
 @media (prefers-color-scheme:dark){:root{--bg:#0f1713;--sf:#17221c;--ink:#e8f0eb;--mut:#93a59a;--ac:#5cc495;--soft:#1f3a2d;--warn:#ff8a7a;--ln:#26352c;--on:#08130e;--lec:#f2c94c;--gry:#9aa39d;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:640px;margin:0 auto;padding:16px 16px 56px}
+main{max-width:640px;margin:0 auto;padding:12px 16px calc(84px + env(safe-area-inset-bottom,0px))}
+.hrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ver{color:var(--mut);font-size:13px;white-space:nowrap}
 h1{font:700 26px/1.1 Georgia,"Times New Roman",serif;margin:8px 0 2px}
 .sub{color:var(--mut);margin:0 0 14px;font-size:14px}
 .tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:14px}
 .tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;font-weight:600;padding:10px 1px;border-radius:9px;cursor:pointer}
 .pill[aria-pressed="true"]{border-color:var(--ac);background:var(--soft);font-weight:600}
 .tabs button[aria-selected="true"]{background:var(--ac);color:var(--on)}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:var(--sf);border-top:1px solid var(--ln);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav button{flex:1;border:0;background:none;color:var(--mut);font:inherit;font-size:12px;font-weight:600;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.bnav button span{font-size:22px;line-height:1;padding:4px 18px;border-radius:14px}
+.bnav button[aria-selected="true"]{color:var(--ac)}
+.bnav button[aria-selected="true"] span{background:var(--soft)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 .row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .pill{border:1px solid var(--ln);background:var(--sf);color:var(--ink);font:inherit;padding:8px 14px;border-radius:20px;cursor:pointer}
@@ -83,19 +90,29 @@ summary{cursor:pointer;font-weight:600}
 .vbar .vd{background:var(--warn);color:var(--on)}
 .bar{height:6px;background:var(--soft);border-radius:3px;margin-top:6px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--warn)}
+.jsec{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
+.jsec h2{font:400 23px/1.15 Georgia,"Times New Roman",serif;margin:0 0 12px}
+.jctl{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:8px}
+.jctl.one{grid-template-columns:1fr}
+.jsub{border-top:1px solid var(--ln);padding:10px 0}
+.jsub h3{margin:0 0 4px;font:600 15px/1.3 system-ui,sans-serif}
+.jline{font-size:14px;color:var(--mut)}
+.grow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
+.grow .gn{color:var(--mut);font-weight:600}
+.grow .g{font-weight:600;text-align:right}
+.g.bad{color:var(--warn)}.g.mut{color:var(--mut);font-weight:400}
+.jsec details{border:0;border-top:1px solid var(--ln);border-radius:0;padding:10px 0 0;margin:8px 0 0;background:none}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
-<h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 3.0</p>
-<div class="tabs" role="tablist">
-  <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
+<div id="hrow"><h1 id="h1">Учёба: ЮФ2611</h1>
+<p class="sub">КубГАУ, юридический факультет · версия 3.2</p></div>
+<div class="tabs" role="tablist" id="htabs">
+  <button role="tab" data-tab="s" aria-selected="true">Расписание</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
-  <button role="tab" data-tab="n" aria-selected="false">Конспекты</button>
   <button role="tab" data-tab="q" aria-selected="false">Поиск</button>
-  <button role="tab" data-tab="j" aria-selected="false">Журнал</button>
 </div>
 
 <section id="s">
@@ -150,16 +167,7 @@ summary{cursor:pointer;font-weight:600}
   <p class="note">Всё хранится только на этом устройстве: конспекты, задачи и фото. Safari может очистить данные сайта, если им долго не пользоваться, поэтому время от времени сохраняйте копию в файл (в «Файлы» или iCloud). В копию входят и фото.</p>
 </section>
 <section id="j" hidden>
-  <h2 style="font:600 18px/1.2 system-ui,sans-serif;margin:4px 0 10px">Пропуски занятий</h2>
-  <div id="attv"></div>
-  <details id="attin">
-    <summary>Обновить из ЛК</summary>
-    <form id="attf">
-      <label>Вставьте таблицу «Пропуски занятий» целиком<textarea id="atxt" rows="6"></textarea></label>
-      <button class="add" type="submit">Разобрать и сохранить</button>
-    </form>
-    <p class="note">В ЛК выделите таблицу, скопируйте и вставьте сюда. Приложение в ЛК не входит и пароль не хранит. Данные остаются только на этом устройстве и входят в копию.</p>
-  </details>
+  <div id="jbox"></div>
 </section>
 
 <section id="q" hidden>
@@ -175,6 +183,11 @@ summary{cursor:pointer;font-weight:600}
   <div id="qres"></div>
 </section>
 </main>
+<nav class="bnav" role="tablist">
+  <button role="tab" data-nav="home" aria-selected="true"><span>🏠</span>Главная</button>
+  <button role="tab" data-nav="n" aria-selected="false"><span>📝</span>Конспекты</button>
+  <button role="tab" data-nav="j" aria-selected="false"><span>📊</span>Успеваемость</button>
+</nav>
 <div id="viewer" hidden><img id="vimg" alt="Фото конспекта"><div class="vbar"><button id="vdel" class="vd">Удалить фото</button><button id="vclose">Закрыть</button></div></div>
 
 <script>
@@ -207,12 +220,12 @@ var SN={1:[
 [[1,"Основы российской государственности","Чикаева К. С.","436гл"],[2,"Правоохранительные органы","Немира С. В.","442гл"],[3,"История государства и права зарубежных стран","Рябченко А. Г.","2гд"],[4,"Философия","Плотников Н. В.","2гд"]]]};
 function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · "),k:roleOf(l[2])||kindFor(l[1],l[3]||"",false),pe:(l[1].indexOf("Элективные")===0&&!l[2])?PEC:undefined})})})});return o}
 
-var S={group:DEF,sched:{},tasks:[],notes:[],saved:[],teachers:{},att:null};
+var S={group:DEF,sched:{},tasks:[],notes:[],saved:[],teachers:{},att:{},atst:{},jsel:{}};
 function load(){try{var j=JSON.parse(localStorage.getItem(KEY)||"null");if(!j)return;
   if(j.group)S.group=j.group;
   if(j.sched&&typeof j.sched==="object")S.sched=j.sched;
   else if(Array.isArray(j.lessons)&&j.lessons.length&&j.updated)S.sched[DEF]={lessons:j.lessons,updated:j.updated};
-  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[];S.teachers=j.teachers||{};S.peMine=j.peMine||"";S.att=j.att||null}catch(e){}}
+  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[];S.teachers=j.teachers||{};S.peMine=j.peMine||"";S.att=normAtt(j.att);S.atst=j.atst||{};S.jsel=j.jsel||{}}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function cur(){return S.sched[S.group]||(S.group===DEF?{lessons:snapshot(),updated:null}:{lessons:[],updated:null})}
 function $(id){return document.getElementById(id)}
@@ -487,7 +500,7 @@ function toDataURL(b){return new Promise(function(res,rej){var r=new FileReader(
 function backupText(){
   var photos={},ids=[];S.notes.forEach(function(n){(n.photos||[]).forEach(function(id){ids.push(id)})});
   return ids.reduce(function(p,id){return p.then(function(){return dbGet(id).then(function(b){if(b)return toDataURL(b).then(function(u){photos[id]=u})}).catch(function(){})})},Promise.resolve())
-    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,saved:S.saved,teachers:S.teachers,peMine:S.peMine,att:S.att,photos:photos})});
+    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,saved:S.saved,teachers:S.teachers,peMine:S.peMine,att:S.att,atst:S.atst,jsel:S.jsel,photos:photos})});
 }
 function saveFile(name,text){
   var f=null;try{f=new File([text],name,{type:"application/json"})}catch(e){}
@@ -502,7 +515,7 @@ $("rsf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
     if(!j||(!j.tasks&&!j.notes)){alert("Это не копия данных приложения.");return}
     if(!confirm("Заменить текущие задачи и конспекты данными из файла?"))return;
     Object.keys(j.photos||{}).reduce(function(p,id){return p.then(function(){return fetch(j.photos[id]).then(function(x){return x.blob()}).then(function(b){return dbPut(id,b)}).catch(function(){})})},Promise.resolve()).then(function(){
-      S.tasks=j.tasks||[];S.notes=j.notes||[];if(j.saved)S.saved=j.saved;if(j.teachers)S.teachers=j.teachers;if(j.peMine)S.peMine=j.peMine;if(j.att)S.att=j.att;save();renderTasks();renderDays();renderNotes();renderSaved();alert("Данные восстановлены.")})};
+      S.tasks=j.tasks||[];S.notes=j.notes||[];if(j.saved)S.saved=j.saved;if(j.teachers)S.teachers=j.teachers;if(j.peMine)S.peMine=j.peMine;if(j.att)S.att=normAtt(j.att);if(j.atst)S.atst=j.atst;if(j.jsel)S.jsel=j.jsel;save();renderTasks();renderDays();renderNotes();renderSaved();alert("Данные восстановлены.")})};
   r.readAsText(f)};
 
 /* поиск: группа и аудитория берутся с сайта (type_schedule=1 и 3), преподаватель ищется по уже загруженным расписаниям */
@@ -682,14 +695,20 @@ $("qf").onsubmit=function(e){e.preventDefault();var v=$("qin").value.trim();if(!
   if(SQ.mode==="1")v=v.replace(/\s+/g,"").toUpperCase();
   openSearch(+SQ.mode,v)};
 
-/* журнал: пропуски занятий. Таблицу из ЛК вставляет сам студент, в ЛК приложение не входит */
+/* журнал: разделы как в ЛК. Таблицы вставляет сам студент, в ЛК приложение не входит.
+   Новый раздел добавляется записью в JSEC (заголовок, разбор вставленного текста, отрисовка). */
+var SEM0="1 Семестр 2026/2027 года";
+var GRADE_RE=/^(Не допущен|Не выставлено|Не зачтено|Не удовлетворительно|Неудовлетворительно|Незачёт|Незачет|Удовлетворительно|Отлично|Хорошо|Зачтено|Зачёт|Зачет)$/i;
+var GRADE_FLAT="Не допущен|Не выставлено|Не зачтено|Не удовлетворительно|Неудовлетворительно|Незачёт|Незачет|Удовлетворительно|Отлично|Хорошо|Зачтено|Зачёт|Зачет";
+var GV={"отлично":5,"хорошо":4,"удовлетворительно":3,"неудовлетворительно":2,"не удовлетворительно":2};
+function normAtt(x){if(x&&x.rows){var o={};o[SEM0]=x;return o}return x||{}}
 function attNum(x){x=(x||"").trim();if(x==="-"||x==="—"||x==="–")return 0;return /^\d+$/.test(x)?+x:null}
 function attRow(subj,type,m,h,t){return{s:subj,t:type,m:attNum(m),h:attNum(h),a:attNum(t)}}
 function parseAtt(text){
   var rows=[];
   text.replace(/\r/g,"").split("\n").forEach(function(ln){
     var c=ln.split("\t").map(function(x){return x.trim()});
-    if(c.length>=3&&/^\d{1,3}$/.test(c[0])&&c[1]&&c[2])rows.push(attRow(c[1],c[2],c[3],c[4],c[5]));
+    if(c.length>=3&&/^\d{1,3}$/.test(c[0])&&c[1]&&c[2]&&!GRADE_RE.test(c[2]))rows.push(attRow(c[1],c[2],c[3],c[4],c[5]));
   });
   if(rows.length)return rows;
   /* если табуляции потерялись при копировании: разбираем сплошной текст */
@@ -697,47 +716,143 @@ function parseAtt(text){
   while((m=re.exec(flat)))rows.push(attRow(m[2],m[3],m[4],m[5],m[6]));
   return rows;
 }
-function renderAtt(){
-  var box=$("attv");box.textContent="";var a=S.att;
-  if(!a||!a.rows||!a.rows.length){box.appendChild(mk("p","note","Пока пусто. Откройте «Обновить из ЛК» ниже и вставьте таблицу «Пропуски занятий»."));return}
-  var tm=0,th=0;a.rows.forEach(function(r){if(r.m!=null&&r.h!=null){tm+=r.m;th+=r.h}});
+function parseAtst(text){
+  var rows=[];
+  text.replace(/\r/g,"").split("\n").forEach(function(ln){
+    var c=ln.split("\t").map(function(x){return x.trim()});
+    if(c.length>=3&&/^\d{1,3}$/.test(c[0])&&c[1]&&GRADE_RE.test(c[2]))rows.push({s:c[1],g:c[2]});
+  });
+  if(rows.length)return rows;
+  var flat=text.replace(/\s+/g," "),re=new RegExp("(?:^| )(\\d{1,3}) ([^\\d]+?) ("+GRADE_FLAT+")(?= |$)","gi"),m;
+  while((m=re.exec(flat)))rows.push({s:m[2],g:m[3]});
+  return rows;
+}
+function viewAtt(box,data,sel){
+  if(!data||!data.rows.length){box.appendChild(mk("p","note","За этот семестр данных нет. Откройте «Обновить из ЛК» и вставьте таблицу."));return}
+  var tm=0,th=0;data.rows.forEach(function(r){if(r.m!=null&&r.h!=null){tm+=r.m;th+=r.h}});
   box.appendChild(mk("div","nowbox calm","Пропущено "+tm+" ч из "+th+" проведённых ("+(th?Math.round(tm*100/th):0)+"%)"));
-  if(a.prev){
-    var pm={},ch=[];a.prev.rows.forEach(function(r){pm[r.s+"|"+r.t]=r.m||0});
-    a.rows.forEach(function(r){var d=(r.m||0)-(pm[r.s+"|"+r.t]||0);if(d)ch.push(r.s+" ("+r.t.toLowerCase()+"): "+(d>0?"+":"")+d+" ч")});
+  if(data.prev){
+    var pm={},ch=[];data.prev.rows.forEach(function(r){pm[r.s+"|"+r.t]=r.m||0});
+    data.rows.forEach(function(r){var d=(r.m||0)-(pm[r.s+"|"+r.t]||0);if(d)ch.push(r.s+" ("+r.t.toLowerCase()+"): "+(d>0?"+":"")+d+" ч")});
     var nb=mk("div","nxt");nb.appendChild(mk("b","","Изменилось с прошлой вставки"));
     if(ch.length)ch.forEach(function(x){nb.appendChild(mk("div","",x))});else nb.appendChild(mk("div","","Новых пропусков нет."));
     box.appendChild(nb);
   }
-  var by={},order=[];a.rows.forEach(function(r){if(!by[r.s]){by[r.s]=[];order.push(r.s)}by[r.s].push(r)});
+  var by={},order=[];data.rows.forEach(function(r){if(!by[r.s]){by[r.s]=[];order.push(r.s)}by[r.s].push(r)});
   function sum(s){return by[s].reduce(function(x,r){return x+(r.m||0)},0)}
   order.sort(function(x,y){return sum(y)-sum(x)||x.localeCompare(y,"ru")});
   order.forEach(function(s){
-    var el=mk("div","day");el.appendChild(mk("h2","",s+" · пропущено "+sum(s)+" ч"));
+    var el=mk("div","jsub");el.appendChild(mk("h3","",s+" · пропущено "+sum(s)+" ч"));
     by[s].forEach(function(r){
-      var row=mk("div","les"),c=mk("div"),tx;row.style.gridTemplateColumns="1fr";
-      c.appendChild(mk("div","n",r.t));
+      var c=mk("div"),tx;
       if(r.m==null)tx="нет данных";
       else tx="пропущено "+r.m+" ч"+(r.h!=null?" из "+r.h+" проведённых":"")+(r.a!=null?" · по плану всего "+r.a+" ч":"");
-      c.appendChild(mk("div","m",tx));
+      var ln=mk("div","jline");ln.appendChild(mk("b","",r.t+": "));ln.appendChild(document.createTextNode(tx));c.appendChild(ln);
       if(r.m!=null&&r.h){var bar=mk("div","bar"),i=mk("i");i.style.width=Math.min(100,Math.round(r.m*100/r.h))+"%";bar.appendChild(i);c.appendChild(bar)}
-      row.appendChild(c);el.appendChild(row);
+      el.appendChild(c);
     });
     box.appendChild(el);
   });
-  box.appendChild(mk("p","note","Обновлено: "+new Date(a.updated).toLocaleString("ru-RU")));
+  box.appendChild(mk("p","note","Обновлено: "+new Date(data.updated).toLocaleString("ru-RU")));
 }
-$("attf").onsubmit=function(e){e.preventDefault();var rows=parseAtt($("atxt").value);
-  if(!rows.length){alert("Не нашёл в тексте таблицу. Скопируйте её целиком, вместе со строками дисциплин.");return}
-  S.att={updated:Date.now(),rows:rows,prev:S.att?{updated:S.att.updated,rows:S.att.rows}:null};
-  save();$("atxt").value="";$("attin").open=false;renderAtt()};
+function viewAtst(box,data,sel){
+  if(!data||!data.rows.length){box.appendChild(mk("p","note","Для этого семестра и номера аттестации данных нет. Откройте «Обновить из ЛК» и вставьте таблицу."));return}
+  var cnt={},order=[],num=0,sum=0;
+  data.rows.forEach(function(r){if(!cnt[r.g]){cnt[r.g]=0;order.push(r.g)}cnt[r.g]++;var v=GV[r.g.toLowerCase()];if(v){num++;sum+=v}});
+  var sm=mk("div","nowbox calm",(num?"Средний балл по выставленным оценкам: "+(sum/num).toFixed(1).replace(".",",")+". ":"")+order.map(function(g){return g+": "+cnt[g]}).join(" · "));
+  box.appendChild(sm);
+  if(data.prev){
+    var pm={},ch=[];data.prev.rows.forEach(function(r){pm[r.s]=r.g});
+    data.rows.forEach(function(r){if(pm[r.s]!==undefined&&pm[r.s]!==r.g)ch.push(r.s+": "+pm[r.s]+" → "+r.g);else if(pm[r.s]===undefined)ch.push(r.s+": "+r.g+" (новая строка)")});
+    var nb=mk("div","nxt");nb.appendChild(mk("b","","Изменилось с прошлой вставки"));
+    if(ch.length)ch.forEach(function(x){nb.appendChild(mk("div","",x))});else nb.appendChild(mk("div","","Без изменений."));
+    box.appendChild(nb);
+  }
+  var miss={},ad=S.att[sel.sem];
+  if(ad)ad.rows.forEach(function(r){miss[r.s]=(miss[r.s]||0)+(r.m||0)});
+  data.rows.forEach(function(r,i){
+    var row=mk("div","grow"),c=mk("div");
+    row.appendChild(mk("div","gn",String(i+1)));
+    c.appendChild(mk("div","",r.s));
+    if(miss[r.s])c.appendChild(mk("div","jline","пропущено "+miss[r.s]+" ч"));
+    row.appendChild(c);
+    var cls=/Не допущен|Не удовл|Неудовл|Не зачт|Незач/i.test(r.g)?" bad":/Не выставлено/i.test(r.g)?" mut":"";
+    row.appendChild(mk("div","g"+cls,r.g));
+    box.appendChild(row);
+  });
+  box.appendChild(mk("p","note","Обновлено: "+new Date(data.updated).toLocaleString("ru-RU")));
+}
+var JSEC=[
+  {id:"att",title:"Пропуски занятий",tab:"Пропуски",num:false,parse:parseAtt,view:viewAtt,hint:"таблицу «Пропуски занятий»"},
+  {id:"atst",title:"Результаты промежуточной аттестации",tab:"Аттестация",num:true,parse:parseAtst,view:viewAtst,hint:"таблицу «Результаты промежуточной аттестации»"}
+];
+function jStore(def){return def.id==="att"?S.att:S.atst}
+function jKey(def,sem,n){return def.num?sem+"|"+n:sem}
+function jSel(def){return S.jsel[def.id]||(S.jsel[def.id]={sem:SEM0,n:"1"})}
+function semOpts(){
+  var set={};set[SEM0]=1;
+  Object.keys(S.att).forEach(function(k){set[k]=1});
+  Object.keys(S.atst).forEach(function(k){set[k.split("|")[0]]=1});
+  Object.keys(S.jsel).forEach(function(k){if(S.jsel[k]&&S.jsel[k].sem)set[S.jsel[k].sem]=1});
+  return Object.keys(set).sort(function(a,b){return a.localeCompare(b,"ru",{numeric:true})});
+}
+function numOpts(){
+  var set={"1":1,"2":1,"3":1};
+  Object.keys(S.atst).forEach(function(k){var n=k.split("|")[1];if(n)set[n]=1});
+  Object.keys(S.jsel).forEach(function(k){if(S.jsel[k]&&S.jsel[k].n)set[S.jsel[k].n]=1});
+  return Object.keys(set).sort(function(a,b){return a-b});
+}
+function buildSec(def){
+  var sec=mk("div","jsec"),sel=jSel(def);
+  sec.appendChild(mk("h2","",def.title));
+  var ctl=mk("div","jctl"+(def.num?"":" one"));
+  var l1=mk("label","","Семестр:"),s1=mk("select");
+  semOpts().forEach(function(x){var o=mk("option","",x);o.value=x;s1.appendChild(o)});
+  s1.value=sel.sem;s1.onchange=function(){sel.sem=s1.value;save();renderJ()};l1.appendChild(s1);ctl.appendChild(l1);
+  if(def.num){
+    var l2=mk("label","","Номер аттестации:"),s2=mk("select");
+    numOpts().forEach(function(x){var o=mk("option","",x);o.value=x;s2.appendChild(o)});
+    s2.value=sel.n;s2.onchange=function(){sel.n=s2.value;save();renderJ()};l2.appendChild(s2);ctl.appendChild(l2);
+  }
+  sec.appendChild(ctl);
+  var add=mk("button","ghost","＋ Добавить семестр");add.type="button";
+  add.onclick=function(){var v=(prompt("Название семестра как в ЛК, например: 2 Семестр 2026/2027 года")||"").trim().replace(/\s+/g," ");if(v){sel.sem=v;save();renderJ()}};
+  sec.appendChild(add);
+  var view=mk("div","jview");view.style.marginTop="12px";
+  def.view(view,jStore(def)[jKey(def,sel.sem,sel.n)],sel);sec.appendChild(view);
+  var d=document.createElement("details"),f=document.createElement("form"),lb=mk("label","","Вставьте "+def.hint+" целиком. Она сохранится для выбранного выше семестра"+(def.num?" и номера аттестации":"")),ta=mk("textarea"),bt=mk("button","add","Разобрать и сохранить");
+  d.appendChild(mk("summary","","Обновить из ЛК"));ta.rows=6;lb.appendChild(ta);bt.type="submit";f.appendChild(lb);f.appendChild(bt);d.appendChild(f);
+  d.appendChild(mk("p","note","В ЛК выделите таблицу, скопируйте и вставьте сюда. Приложение в ЛК не входит и пароль не хранит. Данные остаются только на этом устройстве и входят в копию."));
+  f.onsubmit=function(e){e.preventDefault();var rows=def.parse(ta.value);
+    if(!rows.length){alert("Не нашёл в тексте нужную таблицу. Проверьте, что вставляете её в тот раздел, и скопируйте целиком, вместе со строками дисциплин.");return}
+    var st=jStore(def),k=jKey(def,sel.sem,sel.n),old=st[k];
+    st[k]={updated:Date.now(),rows:rows,prev:old?{updated:old.updated,rows:old.rows}:null};save();renderJ()};
+  sec.appendChild(d);
+  return sec;
+}
+var JT=0;
+function renderJ(){
+  var box=$("jbox");box.textContent="";
+  var tb=mk("div","tabs");tb.setAttribute("role","tablist");
+  JSEC.forEach(function(def,i){var b=mk("button","",def.tab||def.title);b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(i===JT));b.onclick=function(){JT=i;renderJ()};tb.appendChild(b)});
+  box.appendChild(tb);box.appendChild(buildSec(JSEC[JT]));
+}
 
 /* общее */
 function opts(sel,list){list.forEach(function(s){var o=mk("option","",s);o.value=s;sel.appendChild(o)})}
 opts($("tsubj"),SUBJ);opts($("nsubj"),SUBJ);opts($("nfilter"),["Все предметы"].concat(SUBJ));
-document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){
-  document.querySelectorAll("[data-tab]").forEach(function(x){x.setAttribute("aria-selected",String(x===b))});
-  ["s","t","n","q","j"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays();if(b.dataset.tab==="q")openQ();if(b.dataset.tab==="j")renderAtt()}});
+var NAV="home",HT="s";
+function showTab(){
+  var id=NAV==="home"?HT:NAV;
+  ["s","t","n","q","j"].forEach(function(x){$(x).hidden=(x!==id)});
+  $("htabs").hidden=(NAV!=="home");$("hrow").hidden=(NAV!=="home");
+  document.querySelectorAll("[data-nav]").forEach(function(x){x.setAttribute("aria-selected",String(x.dataset.nav===NAV))});
+  document.querySelectorAll("[data-tab]").forEach(function(x){x.setAttribute("aria-selected",String(x.dataset.tab===HT))});
+  if(id==="t")syncLes();if(id==="s")renderDays();if(id==="q")openQ();if(id==="j")renderJ();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){HT=b.dataset.tab;showTab()}});
+document.querySelectorAll("[data-nav]").forEach(function(b){b.onclick=function(){NAV=b.dataset.nav;showTab()}});
 $("today").onclick=function(){sel=startDay();renderDays()};
 $("refresh").onclick=refresh;
 $("ttype").onchange=syncLes;$("tsubj").onchange=syncLes;$("tles").onchange=function(){applyLes(true)};$("tdue").oninput=function(){autoDue=false};
