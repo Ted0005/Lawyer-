@@ -15,7 +15,8 @@ main{max-width:640px;margin:0 auto;padding:16px 16px 56px}
 h1{font:700 26px/1.1 Georgia,"Times New Roman",serif;margin:8px 0 2px}
 .sub{color:var(--mut);margin:0 0 14px;font-size:14px}
 .tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:14px}
-.tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-weight:600;padding:10px 4px;border-radius:9px;cursor:pointer}
+.tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:600;padding:10px 2px;border-radius:9px;cursor:pointer}
+.pill[aria-pressed="true"]{border-color:var(--ac);background:var(--soft);font-weight:600}
 .tabs button[aria-selected="true"]{background:var(--ac);color:var(--on)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 .row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
@@ -86,11 +87,12 @@ summary{cursor:pointer;font-weight:600}
 <body>
 <main>
 <h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 2.7</p>
+<p class="sub">КубГАУ, юридический факультет · версия 2.8</p>
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
   <button role="tab" data-tab="n" aria-selected="false">Конспекты</button>
+  <button role="tab" data-tab="q" aria-selected="false">Поиск</button>
 </div>
 
 <section id="s">
@@ -139,6 +141,18 @@ summary{cursor:pointer;font-weight:600}
   <div class="row" style="margin-top:16px"><button class="ghost" id="bk">Сохранить копию в файл</button><button class="ghost" id="rs">Восстановить из файла</button><input type="file" id="rsf" accept=".json,application/json" hidden></div>
   <p class="note">Всё хранится только на этом устройстве: конспекты, задачи и фото. Safari может очистить данные сайта, если им долго не пользоваться, поэтому время от времени сохраняйте копию в файл (в «Файлы» или iCloud). В копию входят и фото.</p>
 </section>
+<section id="q" hidden>
+  <div class="row"><button class="pill" data-m="1" aria-pressed="true">Группа</button><button class="pill" data-m="3" aria-pressed="false">Аудитория</button><button class="pill" data-m="t" aria-pressed="false">Преподаватель</button></div>
+  <form id="qf">
+    <label><span id="qlt">Номер группы</span><input id="qin" required maxlength="60" list="tdl" autocomplete="off" autocapitalize="none" placeholder="Например: ЮФ2611"></label>
+    <button class="add" type="submit">Найти</button>
+  </form>
+  <datalist id="tdl"></datalist>
+  <p class="note" id="qnote"></p>
+  <div id="qsaved" class="row"></div>
+  <div id="qmsg" class="msg" hidden></div>
+  <div id="qres"></div>
+</section>
 </main>
 <div id="viewer" hidden><img id="vimg" alt="Фото конспекта"><div class="vbar"><button id="vdel" class="vd">Удалить фото</button><button id="vclose">Закрыть</button></div></div>
 
@@ -170,12 +184,12 @@ var SN={1:[
 [[1,"Основы российской государственности","Чикаева К. С.","436гл"],[2,"Правоохранительные органы","Немира С. В.","442гл"],[3,"История государства и права зарубежных стран","Рябченко А. Г.","2гд"],[4,"Философия","Плотников Н. В.","2гд"]]]};
 function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · "),k:kindFor(l[1],l[3]||"",false)})})})});return o}
 
-var S={group:DEF,sched:{},tasks:[],notes:[]};
+var S={group:DEF,sched:{},tasks:[],notes:[],saved:[]};
 function load(){try{var j=JSON.parse(localStorage.getItem(KEY)||"null");if(!j)return;
   if(j.group)S.group=j.group;
   if(j.sched&&typeof j.sched==="object")S.sched=j.sched;
   else if(Array.isArray(j.lessons)&&j.lessons.length&&j.updated)S.sched[DEF]={lessons:j.lessons,updated:j.updated};
-  S.tasks=j.tasks||[];S.notes=j.notes||[]}catch(e){}}
+  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[]}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function cur(){return S.sched[S.group]||(S.group===DEF?{lessons:snapshot(),updated:null}:{lessons:[],updated:null})}
 function $(id){return document.getElementById(id)}
@@ -445,7 +459,7 @@ function toDataURL(b){return new Promise(function(res,rej){var r=new FileReader(
 function backupText(){
   var photos={},ids=[];S.notes.forEach(function(n){(n.photos||[]).forEach(function(id){ids.push(id)})});
   return ids.reduce(function(p,id){return p.then(function(){return dbGet(id).then(function(b){if(b)return toDataURL(b).then(function(u){photos[id]=u})}).catch(function(){})})},Promise.resolve())
-    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,photos:photos})});
+    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,saved:S.saved,photos:photos})});
 }
 function saveFile(name,text){
   var f=null;try{f=new File([text],name,{type:"application/json"})}catch(e){}
@@ -460,15 +474,134 @@ $("rsf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
     if(!j||(!j.tasks&&!j.notes)){alert("Это не копия данных приложения.");return}
     if(!confirm("Заменить текущие задачи и конспекты данными из файла?"))return;
     Object.keys(j.photos||{}).reduce(function(p,id){return p.then(function(){return fetch(j.photos[id]).then(function(x){return x.blob()}).then(function(b){return dbPut(id,b)}).catch(function(){})})},Promise.resolve()).then(function(){
-      S.tasks=j.tasks||[];S.notes=j.notes||[];save();renderTasks();renderDays();renderNotes();alert("Данные восстановлены.")})};
+      S.tasks=j.tasks||[];S.notes=j.notes||[];if(j.saved)S.saved=j.saved;save();renderTasks();renderDays();renderNotes();renderSaved();alert("Данные восстановлены.")})};
   r.readAsText(f)};
+
+/* поиск: группа и аудитория берутся с сайта (type_schedule=1 и 3), преподаватель ищется по уже загруженным расписаниям */
+var SQ={mode:"1",cur:null,w:weekOf(new Date())};
+var TRE=/[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\./g;
+function srcT(t,v){return "https://s.kubsau.ru/?type_schedule="+t+"&val="+encodeURIComponent(v)}
+function skey(t,v){return t===1?v:"3:"+v}
+async function fetchSched(t,v){
+  var last="";
+  for(var i=0;i<ROUTES.length;i++){
+    var name=ROUTES[i][0];
+    try{
+      var r=await get(ROUTES[i][1](srcT(t,v)));
+      if(!r.ok){last=name+": код "+r.status;continue}
+      var ls=parse(r.tx);
+      if(ls.length)return{lessons:ls};
+      last=name+": страница получена, но занятий в ней не найдено (проверьте написание). Начало: "+r.tx.replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,100);
+    }catch(e){last=name+": "+(e&&e.name==="AbortError"?"нет ответа за 12 с":"нет связи")}
+  }
+  throw new Error(last);
+}
+function qmsg(t,bad){var m=$("qmsg");m.hidden=!t;m.textContent=t||"";m.className="msg"+(bad?" bad":"")}
+function allSources(){
+  var a=Object.keys(S.sched).map(function(k){return{src:k.indexOf("3:")===0?"ауд. "+k.slice(2):k,lessons:S.sched[k].lessons||[]}});
+  if(!S.sched[DEF])a.push({src:DEF,lessons:snapshot()});
+  return a;
+}
+function fillDL(){
+  var dl=$("tdl");dl.textContent="";var set={};
+  function add(x){if(x&&!set[x]){set[x]=1;var o=document.createElement("option");o.value=x;dl.appendChild(o)}}
+  if(SQ.mode==="1"){add(S.group);S.saved.forEach(function(s){if(s.t===1)add(s.v)});Object.keys(S.sched).forEach(function(k){if(k.indexOf("3:")!==0)add(k)});return}
+  allSources().forEach(function(s){s.lessons.forEach(function(l){
+    var r=l.r||"";
+    if(SQ.mode==="t"){(r.match(TRE)||[]).forEach(add)}
+    else r.split(/\s·\s|\s\/\s|,\s/).forEach(function(p){p=p.trim();if(/^\d+[а-яё]+$/i.test(p)||p==="Спортивный комплекс")add(p)});
+  })});
+}
+function syncMode(){
+  document.querySelectorAll("[data-m]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.m===SQ.mode))});
+  var L={"1":["Номер группы","Например: ЮФ2611"],"3":["Аудитория, как на сайте","Например: 448гл"],"t":["Фамилия преподавателя","Например: Чикаева"]}[SQ.mode];
+  $("qlt").textContent=L[0];$("qin").placeholder=L[1];
+  $("qnote").textContent=SQ.mode==="t"?"На сайте нет поиска по преподавателю (там только группа и аудитория), поэтому ищу по расписаниям, которые уже загружены на телефон: основной группы и тех, что вы открывали здесь.":"";
+  fillDL();
+}
+function isSaved(t,v){return S.saved.some(function(s){return s.t===t&&s.v===v})}
+function toggleSaved(t,v){
+  if(isSaved(t,v))S.saved=S.saved.filter(function(s){return !(s.t===t&&s.v===v)});else S.saved.push({t:t,v:v});
+  save();renderSaved();renderRes();
+}
+function renderSaved(){
+  var b=$("qsaved");b.textContent="";
+  S.saved.forEach(function(s){var p=mk("button","pill",(s.t===3?"ауд. ":"")+s.v);p.onclick=function(){SQ.mode=String(s.t);syncMode();$("qin").value=s.v;openSearch(s.t,s.v)};b.appendChild(p)});
+}
+function openQ(){syncMode();renderSaved()}
+function openSearch(t,v){
+  var c=S.sched[skey(t,v)];
+  SQ.cur={type:t,val:v,lessons:c?c.lessons:[],updated:c?c.updated:null};qmsg("");renderRes();
+  if(navigator.onLine)loadRemote(t,v,!!c);
+  else if(!c)qmsg("Нет интернета, этого расписания пока нет на телефоне.",true);
+}
+function loadRemote(t,v,had){
+  qmsg("Загружаю…");
+  fetchSched(t,v).then(function(r){
+    var now=Date.now();S.sched[skey(t,v)]={lessons:r.lessons,updated:now};save();
+    if(SQ.cur&&SQ.cur.type===t&&SQ.cur.val===v){SQ.cur={type:t,val:v,lessons:r.lessons,updated:now};renderRes()}
+    if(t===1&&v===S.group)renderDays();
+    qmsg("");
+  }).catch(function(e){qmsg("Не удалось загрузить"+(had?", показано сохранённое":"")+". "+e.message,true)});
+}
+function lessonRow(l,extra){
+  var r=mk("div","les");r.appendChild(mk("div","t",l.t));
+  var it=mk("div","item"+(l.k==="lec"?" lec":l.k==="pr"?" pr":"")),m=mk("div","m");
+  it.appendChild(mk("div","n",l.s));
+  if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));
+  m.appendChild(document.createTextNode((l.r||"")+(extra?" ("+extra+")":"")));
+  it.appendChild(m);r.appendChild(it);return r;
+}
+function byTime(a,b){return mm(startOf(a.t)||"0:0")-mm(startOf(b.t)||"0:0")}
+function renderRes(){
+  var box=$("qres");box.textContent="";var c=SQ.cur;if(!c)return;
+  var top=mk("div","row"),sv=isSaved(c.type,c.val);
+  var b1=mk("button","pill",sv?"★ Убрать из сохранённых":"☆ Сохранить");b1.onclick=function(){toggleSaved(c.type,c.val)};top.appendChild(b1);
+  if(c.type===1&&c.val!==S.group){var b2=mk("button","pill","Сделать основной");b2.onclick=function(){S.group=c.val;save();renderDays();if(navigator.onLine)refresh();qmsg("Основная группа: "+c.val)};top.appendChild(b2)}
+  box.appendChild(mk("h2","",(c.type===1?"Группа ":"Аудитория ")+c.val));box.lastChild.style.cssText="font:600 18px/1.2 system-ui;margin:4px 0 10px";
+  box.appendChild(top);
+  var wr=mk("div","row");[1,2].forEach(function(w){var p=mk("button","pill",(w===1?"I":"II")+" неделя");p.setAttribute("aria-pressed",String(SQ.w===w));p.onclick=function(){SQ.w=w;renderRes()};wr.appendChild(p)});box.appendChild(wr);
+  var base=mon(day0(new Date()));if(weekOf(base)!==SQ.w)base=addD(base,7);
+  var any=false;
+  for(var d=0;d<6;d++){
+    var ls=(c.lessons||[]).filter(function(l){return l.w===SQ.w&&l.d===d}).sort(byTime);
+    if(!ls.length&&d>4)continue;any=any||ls.length>0;
+    var el=mk("div","day");el.appendChild(mk("h2","",DN[d]+", "+addD(base,d).toLocaleDateString("ru-RU",{day:"numeric",month:"long"})));
+    if(!ls.length)el.appendChild(mk("div","empty","Занятий нет"));
+    ls.forEach(function(l){el.appendChild(lessonRow(l))});
+    box.appendChild(el);
+  }
+  box.appendChild(mk("p","note",c.updated?"Обновлено: "+new Date(c.updated).toLocaleString("ru-RU"):"Ещё не загружено."));
+}
+function renderTeacher(q){
+  SQ.cur=null;qmsg("");var box=$("qres");box.textContent="";
+  var ql=q.toLowerCase(),seen={},out=[],srcs=allSources();
+  srcs.forEach(function(s){s.lessons.forEach(function(l){
+    if((l.r||"").toLowerCase().indexOf(ql)<0)return;
+    var key=[l.w,l.d,l.t,l.s,((l.r||"").match(TRE)||[""])[0]].join("|");
+    if(seen[key])return;seen[key]=1;out.push({l:l,src:s.src});
+  })});
+  out.sort(function(a,b){return a.l.w-b.l.w||a.l.d-b.l.d||byTime(a.l,b.l)});
+  if(!out.length){box.appendChild(mk("p","note","Ничего не найдено среди загруженных расписаний ("+srcs.length+"). Откройте расписание нужной группы или аудитории, и преподаватель появится в поиске."));return}
+  var cur="",el=null;
+  out.forEach(function(o){
+    var h=(o.l.w===1?"I":"II")+" неделя · "+DN[o.l.d];
+    if(h!==cur){cur=h;el=mk("div","day");el.appendChild(mk("h2","",h));box.appendChild(el)}
+    el.appendChild(lessonRow(o.l,o.src));
+  });
+}
+document.querySelectorAll("[data-m]").forEach(function(b){b.onclick=function(){SQ.mode=b.dataset.m;$("qin").value="";syncMode()}});
+$("qf").onsubmit=function(e){e.preventDefault();var v=$("qin").value.trim();if(!v)return;
+  if(SQ.mode==="t"){renderTeacher(v);return}
+  if(SQ.mode==="1")v=v.replace(/\s+/g,"").toUpperCase();
+  openSearch(+SQ.mode,v)};
 
 /* общее */
 function opts(sel,list){list.forEach(function(s){var o=mk("option","",s);o.value=s;sel.appendChild(o)})}
 opts($("tsubj"),SUBJ);opts($("nsubj"),SUBJ);opts($("nfilter"),["Все предметы"].concat(SUBJ));
 document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){
   document.querySelectorAll("[data-tab]").forEach(function(x){x.setAttribute("aria-selected",String(x===b))});
-  ["s","t","n"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays()}});
+  ["s","t","n","q"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays();if(b.dataset.tab==="q")openQ()}});
 $("today").onclick=function(){sel=startDay();renderDays()};
 $("refresh").onclick=refresh;
 $("ttype").onchange=syncLes;$("tsubj").onchange=syncLes;$("tles").onchange=function(){applyLes(true)};$("tdue").oninput=function(){autoDue=false};
