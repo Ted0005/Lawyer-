@@ -15,7 +15,7 @@ main{max-width:640px;margin:0 auto;padding:16px 16px 56px}
 h1{font:700 26px/1.1 Georgia,"Times New Roman",serif;margin:8px 0 2px}
 .sub{color:var(--mut);margin:0 0 14px;font-size:14px}
 .tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:14px}
-.tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:600;padding:10px 2px;border-radius:9px;cursor:pointer}
+.tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;font-weight:600;padding:10px 1px;border-radius:9px;cursor:pointer}
 .pill[aria-pressed="true"]{border-color:var(--ac);background:var(--soft);font-weight:600}
 .tabs button[aria-selected="true"]{background:var(--ac);color:var(--on)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
@@ -81,18 +81,21 @@ summary{cursor:pointer;font-weight:600}
 .vbar{display:flex;gap:8px;justify-content:space-between;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
 .vbar button{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;background:#fff;color:#000}
 .vbar .vd{background:var(--warn);color:var(--on)}
+.bar{height:6px;background:var(--soft);border-radius:3px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--warn)}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
 <h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 2.8</p>
+<p class="sub">КубГАУ, юридический факультет · версия 3.0</p>
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
   <button role="tab" data-tab="n" aria-selected="false">Конспекты</button>
   <button role="tab" data-tab="q" aria-selected="false">Поиск</button>
+  <button role="tab" data-tab="j" aria-selected="false">Журнал</button>
 </div>
 
 <section id="s">
@@ -108,6 +111,11 @@ summary{cursor:pointer;font-weight:600}
       <label>Название группы как на сайте<input id="gin" required maxlength="20" placeholder="Например: ЮФ2611" autocapitalize="characters"></label>
       <button class="add" type="submit">Сохранить и загрузить</button>
     </form>
+  </details>
+  <details id="tbox">
+    <summary>Преподаватели: полные ФИО</summary>
+    <form onsubmit="return false"><div id="thl" style="display:grid;gap:10px"></div></form>
+    <p class="note">Впишите ФИО один раз, оно подставится в расписание и поиск. Пока поле пустое, показываются инициалы с сайта. Данные входят в копию.</p>
   </details>
   <p class="note" id="upd"></p>
 </section>
@@ -141,6 +149,19 @@ summary{cursor:pointer;font-weight:600}
   <div class="row" style="margin-top:16px"><button class="ghost" id="bk">Сохранить копию в файл</button><button class="ghost" id="rs">Восстановить из файла</button><input type="file" id="rsf" accept=".json,application/json" hidden></div>
   <p class="note">Всё хранится только на этом устройстве: конспекты, задачи и фото. Safari может очистить данные сайта, если им долго не пользоваться, поэтому время от времени сохраняйте копию в файл (в «Файлы» или iCloud). В копию входят и фото.</p>
 </section>
+<section id="j" hidden>
+  <h2 style="font:600 18px/1.2 system-ui,sans-serif;margin:4px 0 10px">Пропуски занятий</h2>
+  <div id="attv"></div>
+  <details id="attin">
+    <summary>Обновить из ЛК</summary>
+    <form id="attf">
+      <label>Вставьте таблицу «Пропуски занятий» целиком<textarea id="atxt" rows="6"></textarea></label>
+      <button class="add" type="submit">Разобрать и сохранить</button>
+    </form>
+    <p class="note">В ЛК выделите таблицу, скопируйте и вставьте сюда. Приложение в ЛК не входит и пароль не хранит. Данные остаются только на этом устройстве и входят в копию.</p>
+  </details>
+</section>
+
 <section id="q" hidden>
   <div class="row"><button class="pill" data-m="1" aria-pressed="true">Группа</button><button class="pill" data-m="3" aria-pressed="false">Аудитория</button><button class="pill" data-m="t" aria-pressed="false">Преподаватель</button></div>
   <form id="qf">
@@ -169,6 +190,8 @@ var ROUTES=[["напрямую",function(u){return u}],["через allorigins",
 
 /* встроенная копия расписания ЮФ2611 от 24.10.2026 */
 var TM={1:"08:00–09:30",2:"09:45–11:15",3:"11:30–13:00",4:"13:50–15:20",5:"15:35–17:05"};
+/* физкультура: в одной ячейке сайта сразу несколько групп, у каждой свои преподаватели (по данным сайта на 26.10.2026) */
+var PEC=["Желтов А. А.","Ахматгатин А. А. , Шенделева С. В.","Мельников А. И. , Соболь Ю. В. , Комбалин М. Н. , Борисов Д. С.","Ильин В. В.","Кузнецова З. В. , Федосова Л. П.","Евтых С. А. , Матвеева И. С. , Славинский Н. В. , Климова А. И."];
 var PE=["Элективные курсы по физкультуре","","Спорткомплекс"],FL=["Иностранный язык","Батурьян М. А. / Линник А. А.","511гд / 610гл"];
 var SN={1:[
 [[1,"История государства и права зарубежных стран","Рябченко А. Г.","448гл"],[2,"Основы российской государственности","Чикаева К. С.","435гл"],[3].concat(PE)],
@@ -182,14 +205,14 @@ var SN={1:[
 [],
 [[1].concat(PE),[2,"История государства и права России","Павлисова Т. Е.","2гд"],[3,"Правоохранительные органы","Савельева Н. В.","2гд"],[4,"Теория государства и права","Шаповалов А. В.","610гл"]],
 [[1,"Основы российской государственности","Чикаева К. С.","436гл"],[2,"Правоохранительные органы","Немира С. В.","442гл"],[3,"История государства и права зарубежных стран","Рябченко А. Г.","2гд"],[4,"Философия","Плотников Н. В.","2гд"]]]};
-function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · "),k:kindFor(l[1],l[3]||"",false)})})})});return o}
+function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · "),k:roleOf(l[2])||kindFor(l[1],l[3]||"",false),pe:(l[1].indexOf("Элективные")===0&&!l[2])?PEC:undefined})})})});return o}
 
-var S={group:DEF,sched:{},tasks:[],notes:[],saved:[]};
+var S={group:DEF,sched:{},tasks:[],notes:[],saved:[],teachers:{},att:null};
 function load(){try{var j=JSON.parse(localStorage.getItem(KEY)||"null");if(!j)return;
   if(j.group)S.group=j.group;
   if(j.sched&&typeof j.sched==="object")S.sched=j.sched;
   else if(Array.isArray(j.lessons)&&j.lessons.length&&j.updated)S.sched[DEF]={lessons:j.lessons,updated:j.updated};
-  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[]}catch(e){}}
+  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[];S.teachers=j.teachers||{};S.peMine=j.peMine||"";S.att=j.att||null}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function cur(){return S.sched[S.group]||(S.group===DEF?{lessons:snapshot(),updated:null}:{lessons:[],updated:null})}
 function $(id){return document.getElementById(id)}
@@ -240,8 +263,13 @@ function parse(html){
       }
       var room=rooms.join(", "),bold=!!ce[si].querySelector("b,strong,[class*=bold],[style*=bold]");
       var tm=cells[ti].match(/\d{1,2}:\d{2}/g).slice(0,2).join("–");
-      if(subj.indexOf("Элективные курсы")===0){subj="Элективные курсы по физкультуре";tch=""}
-      out.push({w:week,d:day,t:tm,s:subj,r:[tch,room].filter(Boolean).join(" · "),k:kindFor(subj,room,bold,colorKind([el].concat(ce)))});
+      var pe=null;
+      if(subj.indexOf("Элективные курсы")===0){
+        subj="Элективные курсы по физкультуре";
+        var ch=cells[si].split(/Элективные курсы по физической культуре и спорту/).map(function(x){return x.trim()}).filter(Boolean);
+        if(ch.length>1||(tch.match(TRE)||[]).length>1){pe=ch.length>1?ch:[tch];tch=""}
+      }
+      out.push({w:week,d:day,t:tm,s:subj,r:[tch,room].filter(Boolean).join(" · "),k:roleOf(tch)||kindFor(subj,room,bold,colorKind([el].concat(ce))),pe:pe||undefined});
     }else{
       var t=[].slice.call(el.childNodes).filter(function(n){return n.nodeType===3}).map(function(n){return n.textContent}).join(" ").trim();
       if(!t&&/^H[1-6]$/.test(tag))t=el.textContent.trim();
@@ -317,7 +345,7 @@ function renderDays(){
         var it=mk("div","item"+(l.k==="lec"?" lec":l.k==="pr"?" pr":"")),n=mk("div","n",l.s);
         if(live&&j===0)n.appendChild(mk("span","badge","идёт · ещё "+dur(mm(SLOTS[i][1])-nowM)));
         it.appendChild(n);
-        if(l.k||l.r){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));if(l.r)m.appendChild(document.createTextNode(l.r));it.appendChild(m)}
+        if(l.k||l.r||l.pe){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));var lt=lessonText(l);if(lt)m.appendChild(document.createTextNode(lt));it.appendChild(m)}
         c.appendChild(it);
       });
       var st=i>=0?SLOTS[i][0]:startOf(items[0].t),hs=S.tasks.filter(function(t){return t.lesson&&t.lesson.k===dkey(sel)&&t.lesson.t===st&&items.some(function(l){return sameSubj(l.s,t.lesson.s)})});
@@ -339,7 +367,7 @@ function renderDays(){
   var nb=$("nowbox"),txt="",calm=true;
   if(isT){
     for(var i=0;i<6&&!txt;i++){if(by[i].length&&nowM>=mm(SLOTS[i][0])&&nowM<mm(SLOTS[i][1])){txt="Сейчас "+(i+1)+" пара: "+by[i][0].s+" · до "+SLOTS[i][1]+" (ещё "+dur(mm(SLOTS[i][1])-nowM)+")";calm=false}}
-    for(var i=0;i<6&&!txt;i++){if(by[i].length&&mm(SLOTS[i][0])>nowM){txt="Следующая — "+(i+1)+" пара: "+by[i][0].s+" в "+SLOTS[i][0]+" (через "+dur(mm(SLOTS[i][0])-nowM)+")"+(by[i][0].r?" · "+by[i][0].r:"");calm=false}}
+    for(var i=0;i<6&&!txt;i++){if(by[i].length&&mm(SLOTS[i][0])>nowM){txt="Следующая — "+(i+1)+" пара: "+by[i][0].s+" в "+SLOTS[i][0]+" (через "+dur(mm(SLOTS[i][0])-nowM)+")"+(lessonText(by[i][0])?" · "+lessonText(by[i][0]):"");calm=false}}
     if(!txt)txt=first>=0?"Пары на сегодня закончились":"Сегодня пар нет";
   }else if(new Date().getDay()===0&&+sel===+startDay())txt="Сегодня воскресенье. Показан понедельник.";
   nb.hidden=!txt;nb.textContent=txt;nb.className="nowbox"+(calm?" calm":"");
@@ -459,7 +487,7 @@ function toDataURL(b){return new Promise(function(res,rej){var r=new FileReader(
 function backupText(){
   var photos={},ids=[];S.notes.forEach(function(n){(n.photos||[]).forEach(function(id){ids.push(id)})});
   return ids.reduce(function(p,id){return p.then(function(){return dbGet(id).then(function(b){if(b)return toDataURL(b).then(function(u){photos[id]=u})}).catch(function(){})})},Promise.resolve())
-    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,saved:S.saved,photos:photos})});
+    .then(function(){return JSON.stringify({v:3,date:Date.now(),tasks:S.tasks,notes:S.notes,saved:S.saved,teachers:S.teachers,peMine:S.peMine,att:S.att,photos:photos})});
 }
 function saveFile(name,text){
   var f=null;try{f=new File([text],name,{type:"application/json"})}catch(e){}
@@ -474,12 +502,69 @@ $("rsf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
     if(!j||(!j.tasks&&!j.notes)){alert("Это не копия данных приложения.");return}
     if(!confirm("Заменить текущие задачи и конспекты данными из файла?"))return;
     Object.keys(j.photos||{}).reduce(function(p,id){return p.then(function(){return fetch(j.photos[id]).then(function(x){return x.blob()}).then(function(b){return dbPut(id,b)}).catch(function(){})})},Promise.resolve()).then(function(){
-      S.tasks=j.tasks||[];S.notes=j.notes||[];if(j.saved)S.saved=j.saved;save();renderTasks();renderDays();renderNotes();renderSaved();alert("Данные восстановлены.")})};
+      S.tasks=j.tasks||[];S.notes=j.notes||[];if(j.saved)S.saved=j.saved;if(j.teachers)S.teachers=j.teachers;if(j.peMine)S.peMine=j.peMine;if(j.att)S.att=j.att;save();renderTasks();renderDays();renderNotes();renderSaved();alert("Данные восстановлены.")})};
   r.readAsText(f)};
 
 /* поиск: группа и аудитория берутся с сайта (type_schedule=1 и 3), преподаватель ищется по уже загруженным расписаниям */
 var SQ={mode:"1",cur:null,w:weekOf(new Date())};
 var TRE=/[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\./g;
+/* полные ФИО преподавателей: сайт расписания даёт только инициалы. Заполняется вручную, имена берём с официального сайта вуза */
+var DEFT={
+"Рябченко А.Г.":"Рябченко Александр Григорьевич",
+"Линник А.А.":"Линник Анастасия Александровна",
+"Павлисова Т.Е.":"Павлисова Татьяна Евгеньевна",
+"Чикаева К.С.":"Чикаева Карина Суреновна",
+"Савченко М.С.":"Савченко Марина Станиславовна",
+"Лугинина А.Г.":"Лугинина Анна Григорьевна",
+"Немира С.В.":"Немира Сергей Васильевич",
+"Ембулаева Н.Ю.":"Ембулаева Наталья Юрьевна",
+"Славинский Н.В.":"Славинский Николай Васильевич",
+"Плотников Н.В.":"Плотников Наполеон Валерьевич",
+"Кириченко Е.В.":"Кириченко Евгений Владимирович",
+"Шаповалов А.В.":"Шаповалов Анатолий Вячеславович",
+"Комбалин М.Н.":"Комбалин Максим Николаевич",
+"Савельева Н.В.":"Савельева Наталья Владимировна",
+"Батурьян М.А.":"Батурьян Маргарита Аветисовна"
+};
+/* кто ведёт только лекции (lec) или только семинары (pr): так сказал студент, это важнее цвета на сайте */
+var TROLE={"Савельева Н.В.":"lec","Немира С.В.":"pr","Кириченко Е.В.":"pr","Шаповалов А.В.":"pr"};
+function roleOf(t){var m=(t||"").match(TRE);if(!m||m.length!==1)return "";return TROLE[nk(m[0])]||""}
+/* физкультура: показываем только своего преподавателя (по умолчанию Комбалин), остальных из ячейки скрываем */
+function peMine(){return S.peMine||"Комбалин М.Н."}
+function peChunk(l){
+  if(!l.pe||!l.pe.length)return "";
+  var mine=peMine(),found="";
+  l.pe.forEach(function(c){(c.match(TRE)||[]).forEach(function(m){if(!found&&nk(m)===mine)found=m})});
+  return found;
+}
+function lessonText(l){
+  var r=l.r||"";
+  if(l.pe&&l.pe.length){var t=peChunk(l).replace(/\s+,/g,",");return fio(t?(t+(r?" · "+r:"")):((r?r+" · ":"")+"выберите своего преподавателя в разделе «Преподаватели»"))}
+  return fio(r);
+}
+function nk(m){return m.replace(/\.\s+/g,".")}
+function fio(s){return s?s.replace(TRE,function(m){var k=nk(m);return S.teachers[k]||DEFT[k]||m}):s}
+function renderTeachers(){
+  var box=$("thl");box.textContent="";var seen={},list=[];
+  var pes=[],pset={};
+  cur().lessons.forEach(function(l){(l.pe||[]).forEach(function(c){(c.match(TRE)||[]).forEach(function(m){var k=nk(m);if(!pset[k]){pset[k]=1;pes.push({k:k,m:m})}})})});
+  if(pes.length){
+    pes.sort(function(a,b){return a.k.localeCompare(b.k,"ru")});
+    var pl=mk("label","","Физкультура: ваш преподаватель (покажу только его)"),ps=mk("select");
+    pes.forEach(function(p){var o=mk("option","",fio(p.m));o.value=p.k;ps.appendChild(o)});
+    ps.value=peMine();ps.onchange=function(){S.peMine=ps.value;save();renderDays()};
+    pl.appendChild(ps);box.appendChild(pl);
+  }
+  cur().lessons.forEach(function(l){(((l.r||"").match(TRE))||[]).forEach(function(m){var k=nk(m);if(!seen[k]){seen[k]=1;list.push({k:k,m:m})}})});
+  list.sort(function(a,b){return a.k.localeCompare(b.k,"ru")});
+  if(!list.length){box.appendChild(mk("p","note","Преподавателей пока нет. Обновите расписание."));return}
+  list.forEach(function(t){
+    var lb=mk("label","",t.m),inp=mk("input");inp.value=S.teachers[t.k]||DEFT[t.k]||"";inp.placeholder="Фамилия Имя Отчество";inp.maxLength=80;
+    inp.onchange=function(){var v=inp.value.trim().replace(/\s+/g," ");if(v)S.teachers[t.k]=v;else delete S.teachers[t.k];save();renderDays()};
+    lb.appendChild(inp);box.appendChild(lb);
+  });
+}
+$("tbox").addEventListener("toggle",function(){if($("tbox").open)renderTeachers()});
 function srcT(t,v){return "https://s.kubsau.ru/?type_schedule="+t+"&val="+encodeURIComponent(v)}
 function skey(t,v){return t===1?v:"3:"+v}
 async function fetchSched(t,v){
@@ -508,7 +593,7 @@ function fillDL(){
   if(SQ.mode==="1"){add(S.group);S.saved.forEach(function(s){if(s.t===1)add(s.v)});Object.keys(S.sched).forEach(function(k){if(k.indexOf("3:")!==0)add(k)});return}
   allSources().forEach(function(s){s.lessons.forEach(function(l){
     var r=l.r||"";
-    if(SQ.mode==="t"){(r.match(TRE)||[]).forEach(add)}
+    if(SQ.mode==="t"){(r.match(TRE)||[]).forEach(function(x){add(fio(x))})}
     else r.split(/\s·\s|\s\/\s|,\s/).forEach(function(p){p=p.trim();if(/^\d+[а-яё]+$/i.test(p)||p==="Спортивный комплекс")add(p)});
   })});
 }
@@ -549,7 +634,7 @@ function lessonRow(l,extra){
   var it=mk("div","item"+(l.k==="lec"?" lec":l.k==="pr"?" pr":"")),m=mk("div","m");
   it.appendChild(mk("div","n",l.s));
   if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));
-  m.appendChild(document.createTextNode((l.r||"")+(extra?" ("+extra+")":"")));
+  m.appendChild(document.createTextNode(lessonText(l)+(extra?" ("+extra+")":"")));
   it.appendChild(m);r.appendChild(it);return r;
 }
 function byTime(a,b){return mm(startOf(a.t)||"0:0")-mm(startOf(b.t)||"0:0")}
@@ -577,7 +662,8 @@ function renderTeacher(q){
   SQ.cur=null;qmsg("");var box=$("qres");box.textContent="";
   var ql=q.toLowerCase(),seen={},out=[],srcs=allSources();
   srcs.forEach(function(s){s.lessons.forEach(function(l){
-    if((l.r||"").toLowerCase().indexOf(ql)<0)return;
+    var hay=(l.r||"")+" "+(l.pe||[]).join(" ");
+    if((hay+" "+fio(hay)).toLowerCase().indexOf(ql)<0)return;
     var key=[l.w,l.d,l.t,l.s,((l.r||"").match(TRE)||[""])[0]].join("|");
     if(seen[key])return;seen[key]=1;out.push({l:l,src:s.src});
   })});
@@ -596,12 +682,62 @@ $("qf").onsubmit=function(e){e.preventDefault();var v=$("qin").value.trim();if(!
   if(SQ.mode==="1")v=v.replace(/\s+/g,"").toUpperCase();
   openSearch(+SQ.mode,v)};
 
+/* журнал: пропуски занятий. Таблицу из ЛК вставляет сам студент, в ЛК приложение не входит */
+function attNum(x){x=(x||"").trim();if(x==="-"||x==="—"||x==="–")return 0;return /^\d+$/.test(x)?+x:null}
+function attRow(subj,type,m,h,t){return{s:subj,t:type,m:attNum(m),h:attNum(h),a:attNum(t)}}
+function parseAtt(text){
+  var rows=[];
+  text.replace(/\r/g,"").split("\n").forEach(function(ln){
+    var c=ln.split("\t").map(function(x){return x.trim()});
+    if(c.length>=3&&/^\d{1,3}$/.test(c[0])&&c[1]&&c[2])rows.push(attRow(c[1],c[2],c[3],c[4],c[5]));
+  });
+  if(rows.length)return rows;
+  /* если табуляции потерялись при копировании: разбираем сплошной текст */
+  var flat=text.replace(/\s+/g," "),re=/(?:^| )(\d{1,3}) ([^\d]+?) (Лекция|Практическое занятие|Лабораторная работа|Семинарское занятие|Семинар|Консультация)(?: (-|—|\d+) (\d+) (\d+))?(?= |$)/g,m;
+  while((m=re.exec(flat)))rows.push(attRow(m[2],m[3],m[4],m[5],m[6]));
+  return rows;
+}
+function renderAtt(){
+  var box=$("attv");box.textContent="";var a=S.att;
+  if(!a||!a.rows||!a.rows.length){box.appendChild(mk("p","note","Пока пусто. Откройте «Обновить из ЛК» ниже и вставьте таблицу «Пропуски занятий»."));return}
+  var tm=0,th=0;a.rows.forEach(function(r){if(r.m!=null&&r.h!=null){tm+=r.m;th+=r.h}});
+  box.appendChild(mk("div","nowbox calm","Пропущено "+tm+" ч из "+th+" проведённых ("+(th?Math.round(tm*100/th):0)+"%)"));
+  if(a.prev){
+    var pm={},ch=[];a.prev.rows.forEach(function(r){pm[r.s+"|"+r.t]=r.m||0});
+    a.rows.forEach(function(r){var d=(r.m||0)-(pm[r.s+"|"+r.t]||0);if(d)ch.push(r.s+" ("+r.t.toLowerCase()+"): "+(d>0?"+":"")+d+" ч")});
+    var nb=mk("div","nxt");nb.appendChild(mk("b","","Изменилось с прошлой вставки"));
+    if(ch.length)ch.forEach(function(x){nb.appendChild(mk("div","",x))});else nb.appendChild(mk("div","","Новых пропусков нет."));
+    box.appendChild(nb);
+  }
+  var by={},order=[];a.rows.forEach(function(r){if(!by[r.s]){by[r.s]=[];order.push(r.s)}by[r.s].push(r)});
+  function sum(s){return by[s].reduce(function(x,r){return x+(r.m||0)},0)}
+  order.sort(function(x,y){return sum(y)-sum(x)||x.localeCompare(y,"ru")});
+  order.forEach(function(s){
+    var el=mk("div","day");el.appendChild(mk("h2","",s+" · пропущено "+sum(s)+" ч"));
+    by[s].forEach(function(r){
+      var row=mk("div","les"),c=mk("div"),tx;row.style.gridTemplateColumns="1fr";
+      c.appendChild(mk("div","n",r.t));
+      if(r.m==null)tx="нет данных";
+      else tx="пропущено "+r.m+" ч"+(r.h!=null?" из "+r.h+" проведённых":"")+(r.a!=null?" · по плану всего "+r.a+" ч":"");
+      c.appendChild(mk("div","m",tx));
+      if(r.m!=null&&r.h){var bar=mk("div","bar"),i=mk("i");i.style.width=Math.min(100,Math.round(r.m*100/r.h))+"%";bar.appendChild(i);c.appendChild(bar)}
+      row.appendChild(c);el.appendChild(row);
+    });
+    box.appendChild(el);
+  });
+  box.appendChild(mk("p","note","Обновлено: "+new Date(a.updated).toLocaleString("ru-RU")));
+}
+$("attf").onsubmit=function(e){e.preventDefault();var rows=parseAtt($("atxt").value);
+  if(!rows.length){alert("Не нашёл в тексте таблицу. Скопируйте её целиком, вместе со строками дисциплин.");return}
+  S.att={updated:Date.now(),rows:rows,prev:S.att?{updated:S.att.updated,rows:S.att.rows}:null};
+  save();$("atxt").value="";$("attin").open=false;renderAtt()};
+
 /* общее */
 function opts(sel,list){list.forEach(function(s){var o=mk("option","",s);o.value=s;sel.appendChild(o)})}
 opts($("tsubj"),SUBJ);opts($("nsubj"),SUBJ);opts($("nfilter"),["Все предметы"].concat(SUBJ));
 document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){
   document.querySelectorAll("[data-tab]").forEach(function(x){x.setAttribute("aria-selected",String(x===b))});
-  ["s","t","n","q"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays();if(b.dataset.tab==="q")openQ()}});
+  ["s","t","n","q","j"].forEach(function(id){$(id).hidden=(id!==b.dataset.tab)});if(b.dataset.tab==="t")syncLes();if(b.dataset.tab==="s")renderDays();if(b.dataset.tab==="q")openQ();if(b.dataset.tab==="j")renderAtt()}});
 $("today").onclick=function(){sel=startDay();renderDays()};
 $("refresh").onclick=refresh;
 $("ttype").onchange=syncLes;$("tsubj").onchange=syncLes;$("tles").onchange=function(){applyLes(true)};$("tdue").oninput=function(){autoDue=false};
