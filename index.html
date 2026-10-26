@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-title" content="Учёба">
 <title>Учёба ЮФ2611</title>
 <style>
-:root{--bg:#f2f5f2;--sf:#fff;--ink:#14201a;--mut:#5b6b62;--ac:#1e6b4b;--soft:#dcece3;--warn:#b3382c;--ln:#d5ded8;--on:#fff;--lec:#e8832a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1713;--sf:#17221c;--ink:#e8f0eb;--mut:#93a59a;--ac:#5cc495;--soft:#1f3a2d;--warn:#ff8a7a;--ln:#26352c;--on:#08130e;--lec:#f0a052;color-scheme:dark}}
+:root{--bg:#f2f5f2;--sf:#fff;--ink:#14201a;--mut:#5b6b62;--ac:#1e6b4b;--soft:#dcece3;--warn:#b3382c;--ln:#d5ded8;--on:#fff;--lec:#e0a800;--gry:#8a918c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1713;--sf:#17221c;--ink:#e8f0eb;--mut:#93a59a;--ac:#5cc495;--soft:#1f3a2d;--warn:#ff8a7a;--ln:#26352c;--on:#08130e;--lec:#f2c94c;--gry:#9aa39d;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:640px;margin:0 auto;padding:16px 16px 56px}
@@ -43,7 +43,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .item.lec{border-left:4px solid var(--lec);padding-left:8px}
 .n{font-weight:600}.n.off{font-weight:400;color:var(--mut)}
 .m{color:var(--mut);font-size:14px}
+.item.pr{border-left:4px solid var(--gry);padding-left:8px}
 .kind{font-size:12px;font-weight:700;color:var(--lec);margin-right:6px}
+.kind.pr{color:var(--mut)}
 .badge{display:inline-block;font-size:12px;font-weight:700;color:var(--on);background:var(--ac);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 form{display:grid;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
 label{display:grid;gap:4px;font-size:14px;color:var(--mut)}
@@ -68,7 +70,7 @@ summary{cursor:pointer;font-weight:600}
 <body>
 <main>
 <h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 2.1</p>
+<p class="sub">КубГАУ, юридический факультет · версия 2.4</p>
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="s" aria-selected="true">Сегодня</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
@@ -124,8 +126,10 @@ summary{cursor:pointer;font-weight:600}
 var DEF="ЮФ2611", KEY="uch_v2";
 function src(g){return "https://s.kubsau.ru/?type_schedule=1&val="+encodeURIComponent(g)}
 var DN=["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],DS=["Пн","Вт","Ср","Чт","Пт","Сб"];
-var SLOTS=[["08:00","09:30"],["09:45","11:15"],["11:30","13:00"],["13:50","15:20"],["15:35","17:05"],["17:20","18:50"]];
-var KN={lec:"Лекция",pr:"Практика",lab:"Лаб."};
+var SLOTS_MAIN=[["08:00","09:30"],["09:45","11:15"],["11:30","13:00"],["13:50","15:20"],["15:35","17:05"],["17:20","18:50"]];
+var SLOTS_SAT=[["08:00","09:30"],["09:45","11:15"],["11:30","13:00"],["13:15","14:45"],["15:00","16:30"],["16:45","18:15"]];
+var SLOTS=SLOTS_MAIN;
+var KN={lec:"Лекция",pr:"Семинар"};
 var SUBJ=["Правоохранительные органы","Основы российской государственности","Теория государства и права","Конституционное право","История государства и права России","История государства и права зарубежных стран","История России","Философия","Логика","Иностранный язык","Физкультура","Другое"];
 var ROUTES=[["напрямую",function(u){return u}],["через allorigins",function(u){return "https://api.allorigins.win/raw?url="+encodeURIComponent(u)}],["через corsproxy",function(u){return "https://corsproxy.io/?url="+encodeURIComponent(u)}]];
 
@@ -141,10 +145,10 @@ var SN={1:[
 2:[
 [[2,"История России","Чикаева К. С.","11гд"],[3].concat(FL),[4].concat(PE)],
 [[1,"Логика","Лугинина А. Г.","019зоо"],[2,"Конституционное право","Кириченко Е. В.","442гл"],[3,"Конституционное право","Савченко М. С.","2гд"]],
-[[1,"Философия","Плотников Н. В.","019зоо"],[2,"Теория государства и права","Ембулаева Н. Ю.","2гд"],[3,"Логика","Лугинина А. Г.","2гд"]],
+[],
 [[1].concat(PE),[2,"История государства и права России","Павлисова Т. Е.","2гд"],[3,"Правоохранительные органы","Савельева Н. В.","2гд"],[4,"Теория государства и права","Шаповалов А. В.","610гл"]],
 [[1,"Основы российской государственности","Чикаева К. С.","436гл"],[2,"Правоохранительные органы","Немира С. В.","442гл"],[3,"История государства и права зарубежных стран","Рябченко А. Г.","2гд"],[4,"Философия","Плотников Н. В.","2гд"]]]};
-function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · ")})})})});return o}
+function snapshot(){var o=[];[1,2].forEach(function(w){SN[w].forEach(function(d,i){d.forEach(function(l){o.push({w:w,d:i,t:TM[l[0]],s:l[1],r:[l[2],l[3]].filter(Boolean).join(" · "),k:kindFor(l[1],l[3]||"",false)})})})});return o}
 
 var S={group:DEF,sched:{},tasks:[],notes:[]};
 function load(){try{var j=JSON.parse(localStorage.getItem(KEY)||"null");if(!j)return;
@@ -158,7 +162,30 @@ function $(id){return document.getElementById(id)}
 function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
 /* разбор страницы расписания: по тексту заголовков, а не по конкретным тегам */
-function kindOf(txt){var t=txt.toLowerCase();if(/лекц|\(лек|\bлек\./.test(t))return "lec";if(/практ|семинар/.test(t))return "pr";if(/лаборат|\bлаб\./.test(t))return "lab";return ""}
+/* как на сайте: жёлтая полоска (жирное название, аудитория «…гд») — лекция, серая — семинар. Иностранный язык на сайте серый, то есть семинар */
+function kindFor(subj,room,bold,col){if(col)return col;if(/^Иностранный/.test(subj))return "pr";return(bold||/гд$/i.test((room||"").trim()))?"lec":"pr"}
+/* цвет строки на сайте: жёлтый — лекция, серый — семинар (ищем в style, bgcolor и class строки и ячеек) */
+function colorKind(els){
+  for(var i=0;i<els.length;i++){
+    var e=els[i],s=((e.getAttribute("style")||"")+" "+(e.getAttribute("bgcolor")||"")+" "+(e.getAttribute("class")||"")).toLowerCase();
+    var re=/#([0-9a-f]{6}|[0-9a-f]{3})\b|rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g,m;
+    while((m=re.exec(s))){
+      var r,g,b;
+      if(m[1]){var h=m[1].length===3?m[1].replace(/./g,"$&$&"):m[1];r=parseInt(h.slice(0,2),16);g=parseInt(h.slice(2,4),16);b=parseInt(h.slice(4,6),16)}
+      else{r=+m[2];g=+m[3];b=+m[4]}
+      if(r>=g&&g>=b&&r>200&&g>170&&r-b>40&&g-b>20)return "lec";
+    }
+    if(/yellow|gold|warning|lecture|lekc/.test(s))return "lec";
+  }
+  return "";
+}
+function splitCell(el,txt){
+  var b=el.querySelector("b,strong"),subj,rest;
+  if(b&&b.textContent.trim()){subj=b.textContent.replace(/\s+/g," ").trim();rest=txt.replace(subj,"").trim()}
+  else{var m=txt.search(/\s(?:[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\.|ЮФ\d+\/\d)/);
+    if(m>0){subj=txt.slice(0,m).trim();rest=txt.slice(m).trim()}else{subj=txt;rest=""}}
+  return [subj,rest];
+}
 function parse(html){
   var doc=new DOMParser().parseFromString(html,"text/html"),week=0,day=-1,out=[];
   var els=doc.body?doc.body.querySelectorAll("*"):[];
@@ -166,13 +193,21 @@ function parse(html){
     var el=els[k],tag=el.tagName;
     if(tag==="TR"){
       if(!week||day<0)continue;
-      var cells=[].slice.call(el.children).filter(function(c){return /^T[DH]$/.test(c.tagName)}).map(function(c){return c.textContent.replace(/\s+/g," ").trim()});
+      var ce=[].slice.call(el.children).filter(function(c){return /^T[DH]$/.test(c.tagName)});
+      var cells=ce.map(function(c){return c.textContent.replace(/\s+/g," ").trim()});
       var ti=-1;for(var i=0;i<cells.length;i++){if(/\d{1,2}:\d{2}/.test(cells[i])){ti=i;break}}
       if(ti<0)continue;
-      var rest=cells.slice(ti+1).filter(Boolean);if(!rest.length)continue;
+      var si=-1;for(var i2=ti+1;i2<cells.length;i2++){if(cells[i2]){si=i2;break}}
+      if(si<0)continue;
+      var sp=splitCell(ce[si],cells[si]),subj=sp[0],tch=sp[1],rooms=[];
+      for(var q=si+1;q<ce.length;q++){
+        var as=[].slice.call(ce[q].querySelectorAll("a")).map(function(a){return a.textContent.trim()}).filter(Boolean);
+        if(as.length)rooms.push(as.join(" / "));else if(cells[q])rooms.push(cells[q]);
+      }
+      var room=rooms.join(", "),bold=!!ce[si].querySelector("b,strong,[class*=bold],[style*=bold]");
       var tm=cells[ti].match(/\d{1,2}:\d{2}/g).slice(0,2).join("–");
-      var s=rest[0];if(s.indexOf("Элективные курсы")===0)s="Элективные курсы по физкультуре";
-      out.push({w:week,d:day,t:tm,s:s,r:rest.slice(1).join(", "),k:kindOf(el.textContent)});
+      if(subj.indexOf("Элективные курсы")===0){subj="Элективные курсы по физкультуре";tch=""}
+      out.push({w:week,d:day,t:tm,s:subj,r:[tch,room].filter(Boolean).join(" · "),k:kindFor(subj,room,bold,colorKind([el].concat(ce)))});
     }else{
       var t=[].slice.call(el.childNodes).filter(function(n){return n.nodeType===3}).map(function(n){return n.textContent}).join(" ").trim();
       if(!t&&/^H[1-6]$/.test(tag))t=el.textContent.trim();
@@ -229,7 +264,8 @@ function renderStrip(){
 }
 
 function renderDays(){
-  var data=cur(),w=weekOf(sel),d=(sel.getDay()+6)%7,isT=+sel===+day0(new Date()),nowM=new Date().getHours()*60+new Date().getMinutes();
+  var data=cur(),w=weekOf(sel),d=(sel.getDay()+6)%7;SLOTS=(d===5?SLOTS_SAT:SLOTS_MAIN);
+  var isT=+sel===+day0(new Date()),nowM=new Date().getHours()*60+new Date().getMinutes();
   $("h1").textContent="Учёба: "+S.group;$("gname").textContent=S.group;
   renderStrip();
   $("dayh").textContent=DN[d]+", "+sel.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})+" · "+(w===1?"I":"II")+" неделя"+(isT?" · сегодня":"");
@@ -243,10 +279,10 @@ function renderDays(){
     if(items.length){
       var live=isT&&i>=0&&nowM>=mm(SLOTS[i][0])&&nowM<mm(SLOTS[i][1]);if(live)r.classList.add("now");
       items.forEach(function(l,j){
-        var it=mk("div","item"+(l.k==="lec"?" lec":"")),n=mk("div","n",l.s);
+        var it=mk("div","item"+(l.k==="lec"?" lec":l.k==="pr"?" pr":"")),n=mk("div","n",l.s);
         if(live&&j===0)n.appendChild(mk("span","badge","идёт · ещё "+dur(mm(SLOTS[i][1])-nowM)));
         it.appendChild(n);
-        if(l.k||l.r){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind",KN[l.k]));if(l.r)m.appendChild(document.createTextNode(l.r));it.appendChild(m)}
+        if(l.k||l.r){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));if(l.r)m.appendChild(document.createTextNode(l.r));it.appendChild(m)}
         c.appendChild(it);
       });
     }else c.appendChild(mk("div","n off",(i>first&&i<last)?"Окно":"Нет пары"));
@@ -264,7 +300,7 @@ function renderDays(){
   }else if(new Date().getDay()===0&&+sel===+startDay())txt="Сегодня воскресенье. Показан понедельник.";
   nb.hidden=!txt;nb.textContent=txt;nb.className="nowbox"+(calm?" calm":"");
 
-  $("upd").textContent=data.updated?"Обновлено: "+new Date(data.updated).toLocaleString("ru-RU"):(S.group===DEF?"Показана встроенная копия от 24 октября 2026. Нажмите «Обновить», когда есть интернет.":"Расписание группы "+S.group+" ещё не загружено. Нажмите «Обновить».");
+  $("upd").textContent=data.updated?"Обновлено: "+new Date(data.updated).toLocaleString("ru-RU"):(S.group===DEF?"Показана встроенная копия от 26 октября 2026. Нажмите «Обновить», когда есть интернет.":"Расписание группы "+S.group+" ещё не загружено. Нажмите «Обновить».");
 }
 
 /* задачи */
