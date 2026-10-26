@@ -7,53 +7,59 @@
 <meta name="apple-mobile-web-app-title" content="Учёба">
 <title>Учёба ЮФ2611</title>
 <style>
-:root{--bg:#f2f5f2;--sf:#fff;--ink:#14201a;--mut:#5b6b62;--ac:#1e6b4b;--soft:#dcece3;--warn:#b3382c;--ln:#d5ded8;--on:#fff;--lec:#e0a800;--gry:#8a918c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1713;--sf:#17221c;--ink:#e8f0eb;--mut:#93a59a;--ac:#5cc495;--soft:#1f3a2d;--warn:#ff8a7a;--ln:#26352c;--on:#08130e;--lec:#f2c94c;--gry:#9aa39d;color-scheme:dark}}
+:root{--bg:#1a1d1b;--sf:#262826;--ink:#f2f4f2;--mut:#a9aeaa;--ac:#2e7d32;--acl:#4caf50;--soft:#2f3231;--warn:#ff8a7a;--ln:#3a3e3b;--on:#fff;--lec:#c8860d;--gry:#8a8f8b;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:640px;margin:0 auto;padding:12px 16px calc(84px + env(safe-area-inset-bottom,0px))}
 .hrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .ver{color:var(--mut);font-size:13px;white-space:nowrap}
-h1{font:700 26px/1.1 Georgia,"Times New Roman",serif;margin:8px 0 2px}
+h1{font:700 34px/1.1 system-ui,-apple-system,sans-serif;margin:8px 0 2px}
 .sub{color:var(--mut);margin:0 0 14px;font-size:14px}
-.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin-bottom:14px}
-.tabs button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;font-weight:600;padding:10px 1px;border-radius:9px;cursor:pointer}
+.tabs{display:flex;gap:0;background:none;padding:0;border-bottom:1px solid var(--ln);margin-bottom:14px}
+.tabs button{flex:1;border:0;background:none;color:var(--mut);font:inherit;font-size:14px;font-weight:600;padding:10px 1px;border-bottom:3px solid transparent;cursor:pointer}
 .pill[aria-pressed="true"]{border-color:var(--ac);background:var(--soft);font-weight:600}
-.tabs button[aria-selected="true"]{background:var(--ac);color:var(--on)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--acl)}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:var(--sf);border-top:1px solid var(--ln);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .bnav button{flex:1;border:0;background:none;color:var(--mut);font:inherit;font-size:12px;font-weight:600;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
 .bnav button span{font-size:22px;line-height:1;padding:4px 18px;border-radius:14px}
-.bnav button[aria-selected="true"]{color:var(--ac)}
-.bnav button[aria-selected="true"] span{background:var(--soft)}
+.bnav button[aria-selected="true"]{color:var(--acl)}
+.bnav button[aria-selected="true"] span{background:var(--ac)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 .row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .pill{border:1px solid var(--ln);background:var(--sf);color:var(--ink);font:inherit;padding:8px 14px;border-radius:20px;cursor:pointer}
 .msg{font-size:14px;padding:10px 12px;border-radius:10px;background:var(--soft);margin-bottom:12px;word-break:break-word}
 .msg.bad{color:var(--warn);border:1px solid var(--warn);background:var(--sf)}
-.nowbox{font-size:15px;padding:12px 14px;border-radius:12px;background:var(--ac);color:var(--on);margin-bottom:12px;font-weight:600}
+.nowbox{font-size:15px;padding:12px 14px;border-radius:10px;background:var(--ac);color:var(--on);margin-bottom:12px;font-weight:600}
 .nowbox.calm{background:var(--soft);color:var(--ink);font-weight:500}
 /* лента дней */
 .strip{display:grid;grid-template-columns:32px repeat(6,1fr) 32px;gap:4px;margin-bottom:12px}
-.strip button{border:1px solid var(--ln);background:var(--sf);color:var(--ink);font:inherit;border-radius:10px;padding:6px 0;cursor:pointer;line-height:1.2;min-width:0}
+.strip button{border:0;border-bottom:3px solid transparent;background:none;color:var(--ink);font:inherit;border-radius:0;padding:6px 0;cursor:pointer;line-height:1.2;min-width:0}
 .strip .dw{display:block;font-size:12px;color:var(--mut)}
-.strip .dn{display:block;font-weight:700}
+.strip .dn{display:block;font-weight:600;font-size:20px}
 .strip .ar{font-size:20px;color:var(--mut)}
-.strip button.td{border:2px solid var(--ac)}
-.strip button[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:var(--on)}
-.strip button[aria-pressed="true"] .dw{color:var(--on)}
-.day{background:var(--sf);border:1px solid var(--ln);border-radius:12px;margin-bottom:12px;overflow:hidden}
-.day h2{font:600 15px/1.2 system-ui,sans-serif;margin:0;padding:12px 14px;border-bottom:1px solid var(--ln)}
-.les{display:grid;grid-template-columns:76px 1fr;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ln)}
+.strip button.td{border-bottom-color:var(--gry)}
+.strip button[aria-pressed="true"]{border-bottom-color:var(--acl);font-weight:700}
+.strip button[aria-pressed="true"] .dw{color:var(--ink)}
+.day{background:var(--sf);border:2px solid var(--ln);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.day h2{font:700 20px/1.2 system-ui,sans-serif;margin:0;padding:14px 16px;background:var(--ac);color:#fff}
+.les{display:grid;grid-template-columns:84px 1fr;gap:12px;padding:10px 14px 10px 0;border-bottom:1px solid var(--ln);min-height:78px}
+.les>.t{border-right:10px solid var(--soft);padding:6px 10px 6px 14px;margin:-10px 0}
 .les:last-child{border-bottom:0}
 .les.now{background:var(--soft)}
 .t{color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums}.pn{font-weight:600;color:var(--ink)}
 .item+.item{margin-top:8px}
-.item.lec{border-left:4px solid var(--lec);padding-left:8px}
-.n{font-weight:600}.n.off{font-weight:400;color:var(--mut)}
-.m{color:var(--mut);font-size:14px}
-.item.pr{border-left:4px solid var(--gry);padding-left:8px}
+.item.lec{border-left:10px solid var(--lec);padding-left:12px;margin-left:-12px}
+.n{font-weight:700;font-size:17px}.n.off{font-weight:400;font-size:15px;color:var(--mut)}
+.m{color:var(--acl);font-size:15px}
+.mr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px}
+.mr .ml{min-width:0}
+.mr.stk{grid-template-columns:1fr}
+.mr.stk .rm{max-width:none}
+.rm{color:var(--ink);font-size:15px;text-align:right;white-space:nowrap;line-height:1.25}
+.item.pr{border-left:10px solid var(--gry);padding-left:12px;margin-left:-12px}
 .kind{font-size:12px;font-weight:700;color:var(--lec);margin-right:6px}
 .kind.pr{color:var(--mut)}
+summary{color:var(--ink)}
 .badge{display:inline-block;font-size:12px;font-weight:700;color:var(--on);background:var(--ac);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 form{display:grid;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
 label{display:grid;gap:4px;font-size:14px;color:var(--mut)}
@@ -91,7 +97,7 @@ summary{cursor:pointer;font-weight:600}
 .bar{height:6px;background:var(--soft);border-radius:3px;margin-top:6px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--warn)}
 .jsec{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
-.jsec h2{font:400 23px/1.15 Georgia,"Times New Roman",serif;margin:0 0 12px}
+.jsec h2{font:700 22px/1.15 system-ui,sans-serif;margin:0 0 12px}
 .jctl{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:8px}
 .jctl.one{grid-template-columns:1fr}
 .jsub{border-top:1px solid var(--ln);padding:10px 0}
@@ -108,7 +114,8 @@ summary{cursor:pointer;font-weight:600}
 <body>
 <main>
 <div id="hrow"><h1 id="h1">Учёба: ЮФ2611</h1>
-<p class="sub">КубГАУ, юридический факультет · версия 3.2</p></div>
+<p class="sub">КубГАУ, юридический факультет · версия 3.7</p>
+<div id="bkw" class="nowbox" style="border:1px solid var(--warn)" hidden><span id="bkt"></span> <button class="add" type="button" id="bkb" style="margin-top:8px">Сделать копию</button></div></div>
 <div class="tabs" role="tablist" id="htabs">
   <button role="tab" data-tab="s" aria-selected="true">Расписание</button>
   <button role="tab" data-tab="t" aria-selected="false">Задачи</button>
@@ -225,7 +232,7 @@ function load(){try{var j=JSON.parse(localStorage.getItem(KEY)||"null");if(!j)re
   if(j.group)S.group=j.group;
   if(j.sched&&typeof j.sched==="object")S.sched=j.sched;
   else if(Array.isArray(j.lessons)&&j.lessons.length&&j.updated)S.sched[DEF]={lessons:j.lessons,updated:j.updated};
-  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[];S.teachers=j.teachers||{};S.peMine=j.peMine||"";S.att=normAtt(j.att);S.atst=j.atst||{};S.jsel=j.jsel||{}}catch(e){}}
+  S.tasks=j.tasks||[];S.notes=j.notes||[];S.saved=j.saved||[];S.teachers=j.teachers||{};S.peMine=j.peMine||"";S.att=normAtt(j.att);S.atst=j.atst||{};S.jsel=j.jsel||{};S.lastBk=j.lastBk||0}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function cur(){return S.sched[S.group]||(S.group===DEF?{lessons:snapshot(),updated:null}:{lessons:[],updated:null})}
 function $(id){return document.getElementById(id)}
@@ -358,7 +365,7 @@ function renderDays(){
         var it=mk("div","item"+(l.k==="lec"?" lec":l.k==="pr"?" pr":"")),n=mk("div","n",l.s);
         if(live&&j===0)n.appendChild(mk("span","badge","идёт · ещё "+dur(mm(SLOTS[i][1])-nowM)));
         it.appendChild(n);
-        if(l.k||l.r||l.pe){var m=mk("div","m");if(l.k)m.appendChild(mk("span","kind "+l.k,KN[l.k]));var lt=lessonText(l);if(lt)m.appendChild(document.createTextNode(lt));it.appendChild(m)}
+        if(l.k||l.r||l.pe){var m=mk("div","m");var lt=lessonText(l),pp=splitRoom(lt);m.className="m mr"+(pp.r.length>9?" stk":"");var L=mk("span","ml");if(l.k)L.appendChild(mk("span","kind "+l.k,KN[l.k]));if(pp.t)L.appendChild(document.createTextNode(pp.t));m.appendChild(L);if(pp.r)m.appendChild(mk("span","rm",pp.r));it.appendChild(m)}
         c.appendChild(it);
       });
       var st=i>=0?SLOTS[i][0]:startOf(items[0].t),hs=S.tasks.filter(function(t){return t.lesson&&t.lesson.k===dkey(sel)&&t.lesson.t===st&&items.some(function(l){return sameSubj(l.s,t.lesson.s)})});
@@ -504,11 +511,11 @@ function backupText(){
 }
 function saveFile(name,text){
   var f=null;try{f=new File([text],name,{type:"application/json"})}catch(e){}
-  var sh=(f&&navigator.canShare&&navigator.canShare({files:[f]}))?navigator.share({files:[f]}).then(function(){return true}).catch(function(e){return !!(e&&e.name==="AbortError")}):Promise.resolve(false);
-  return sh.then(function(done){if(done)return;var u=URL.createObjectURL(new Blob([text],{type:"application/json"})),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)});
+  var sh=(f&&navigator.canShare&&navigator.canShare({files:[f]}))?navigator.share({files:[f]}).then(function(){return true}).catch(function(e){return (e&&e.name==="AbortError")?"x":false}):Promise.resolve(false);
+  return sh.then(function(done){if(done==="x")return false;if(done)return true;var u=URL.createObjectURL(new Blob([text],{type:"application/json"})),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000);return true});
 }
 $("bk").onclick=function(){var b=$("bk");b.disabled=true;b.textContent="Готовлю копию…";
-  backupText().then(function(t){return saveFile("uchyoba-"+dkey(new Date())+".json",t)}).catch(function(){alert("Не получилось сделать копию.")}).then(function(){b.disabled=false;b.textContent="Сохранить копию в файл"})};
+  backupText().then(function(t){return saveFile("uchyoba-"+dkey(new Date())+".json",t)}).then(function(ok){if(ok){S.lastBk=Date.now();save();renderBk()}}).catch(function(){alert("Не получилось сделать копию.")}).then(function(){b.disabled=false;b.textContent="Сохранить копию в файл"})};
 $("rs").onclick=function(){$("rsf").click()};
 $("rsf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
   var r=new FileReader();r.onload=function(){var j;try{j=JSON.parse(r.result)}catch(e){alert("Не получилось прочитать файл.");return}
@@ -554,6 +561,10 @@ function lessonText(l){
   var r=l.r||"";
   if(l.pe&&l.pe.length){var t=peChunk(l).replace(/\s+,/g,",");return fio(t?(t+(r?" · "+r:"")):((r?r+" · ":"")+"выберите своего преподавателя в разделе «Преподаватели»"))}
   return fio(r);
+}
+function splitRoom(t){
+  var tp=[],rp=[];(t||"").split(" · ").forEach(function(x){x=x.trim();if(!x)return;(/^[А-ЯЁ][а-яё-]+\s+([А-ЯЁ]\.|[А-ЯЁ][а-яё]+)/.test(x)&&!/^Спортивный|^Выберите/i.test(x)?tp:rp).push(x)});
+  return{t:tp.join(" · "),r:rp.join(" · ")};
 }
 function nk(m){return m.replace(/\.\s+/g,".")}
 function fio(s){return s?s.replace(TRE,function(m){var k=nk(m);return S.teachers[k]||DEFT[k]||m}):s}
@@ -853,13 +864,18 @@ function showTab(){
 }
 document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){HT=b.dataset.tab;showTab()}});
 document.querySelectorAll("[data-nav]").forEach(function(b){b.onclick=function(){NAV=b.dataset.nav;showTab()}});
+function renderBk(){
+  var has=(S.tasks&&S.tasks.length)||(S.notes&&S.notes.length),age=S.lastBk?(Date.now()-S.lastBk)/864e5:1e9;
+  var w=$("bkw");w.hidden=!(has&&age>=7);if(w.hidden)return;
+  $("bkt").textContent=S.lastBk?"Копию данных не делали "+Math.floor(age)+" дн. Сохраните её в «Файлы» или iCloud, чтобы данные не пропали.":"Копия данных ещё не делалась. Сохраните её в «Файлы» или iCloud, чтобы данные не пропали."}
+$("bkb").onclick=function(){$("bk").click()};
 $("today").onclick=function(){sel=startDay();renderDays()};
 $("refresh").onclick=refresh;
 $("ttype").onchange=syncLes;$("tsubj").onchange=syncLes;$("tles").onchange=function(){applyLes(true)};$("tdue").oninput=function(){autoDue=false};
 $("gf").onsubmit=function(e){e.preventDefault();var v=$("gin").value.replace(/\s+/g,"").toUpperCase();if(!v)return;
   S.group=v;save();$("gin").value="";$("gbox").open=false;renderDays();if(navigator.onLine)refresh()};
 if("Notification" in window&&Notification.permission==="default"){$("notif").hidden=false;$("notif").onclick=function(){Notification.requestPermission().then(function(){$("notif").hidden=true})}}
-load();renderDays();renderTasks();renderNotes();notifyDue();
+load();renderDays();renderTasks();renderNotes();renderBk();notifyDue();
 setInterval(function(){renderDays();renderTasks();notifyDue()},60000);
 if("serviceWorker" in navigator){try{navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}}
 if(navigator.onLine)refresh();
